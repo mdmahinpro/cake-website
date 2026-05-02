@@ -1,4 +1,4 @@
-import { useIntersection } from "../../hooks/useIntersection";
+import { motion } from "framer-motion";
 
 interface AnimatedSectionProps {
   children: React.ReactNode;
@@ -11,19 +11,19 @@ export default function AnimatedSection({
   className = "",
   delay = 0,
 }: AnimatedSectionProps) {
-  const [ref, isVisible] = useIntersection();
-
   return (
-    <div
-      ref={ref as React.RefObject<HTMLDivElement>}
-      className={`transition-all duration-700 ${
-        isVisible
-          ? "animate-fade-up opacity-100"
-          : "opacity-0 translate-y-10"
-      } ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+    <motion.div
+      initial={{ opacity: 0, y: 36, scale: 0.975 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{
+        duration: 0.65,
+        delay: delay / 1000,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className={className}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

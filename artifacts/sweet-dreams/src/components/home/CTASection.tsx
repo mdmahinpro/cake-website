@@ -14,11 +14,7 @@ export default function CTASection() {
   const { state } = useStore();
   const { settings } = state;
 
-  const whatsappUrl = buildWhatsAppUrl(
-    settings.whatsappNumber,
-    "General inquiry",
-    "Custom"
-  );
+  const whatsappUrl = buildWhatsAppUrl(settings.whatsappNumber, "General inquiry", "Custom");
   const facebookUrl = buildFacebookUrl(settings.facebookPageUrl, "General inquiry");
 
   return (
@@ -26,11 +22,18 @@ export default function CTASection() {
       className="relative py-24 overflow-hidden"
       style={{
         backgroundImage:
-          "linear-gradient(135deg, #1a0a00 0%, #3d1500 50%, #1a0a00 100%)",
+          "linear-gradient(135deg, #010d1e 0%, #051e36 40%, #010d1e 100%)",
         backgroundSize: "300% 300%",
         animation: "gradientShift 6s ease infinite",
       }}
     >
+      {/* Aqua radial glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse at center, rgba(0,190,255,0.08) 0%, transparent 70%)",
+        }}
+      />
       <SparkleField />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-8 text-center">
@@ -43,20 +46,20 @@ export default function CTASection() {
           className="font-poppins text-lg text-caramel-200 max-w-xl leading-relaxed"
         >
           Get your custom handcrafted cake made with love and delivered fresh.
-          Reach out to us today and let's make something magical together!
+          Reach out to us today and let&rsquo;s make something magical together!
         </motion.p>
 
         <motion.div
           {...fadeUp(0.2)}
           className="flex flex-col sm:flex-row gap-4 w-full justify-center"
         >
-          {/* WhatsApp button */}
+          {/* WhatsApp */}
           <div className="relative">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-colors duration-300 min-h-[52px]"
+              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-all duration-300 hover:scale-105 min-h-[52px]"
               style={{
                 background: "linear-gradient(to right, #22c55e, #15803d)",
                 boxShadow: "0 10px 30px rgba(34,197,94,0.3)",
@@ -72,13 +75,13 @@ export default function CTASection() {
             )}
           </div>
 
-          {/* Facebook button */}
+          {/* Facebook */}
           <div className="relative">
             <a
               href={facebookUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-colors duration-300 min-h-[52px]"
+              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-all duration-300 hover:scale-105 min-h-[52px]"
               style={{
                 background: "linear-gradient(to right, #3b82f6, #1d4ed8)",
                 boxShadow: "0 10px 30px rgba(59,130,246,0.3)",
@@ -96,9 +99,15 @@ export default function CTASection() {
         </motion.div>
 
         {settings.whatsappNumber && (
-          <motion.p {...fadeUp(0.3)} className="text-caramel-300 text-sm">
-            📞 +{settings.whatsappNumber}
-          </motion.p>
+          <motion.a
+            {...fadeUp(0.3)}
+            href={`https://wa.me/${settings.whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-caramel-300 text-sm hover:text-caramel-400 transition-colors"
+          >
+            +{settings.whatsappNumber}
+          </motion.a>
         )}
       </div>
     </section>

@@ -1,41 +1,59 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaWhatsapp, FaFacebook } from "react-icons/fa";
 import { useStore } from "../../store/useStore";
 import { openOrderChannel } from "../../utils/order";
 
 const NAV_LINKS = [
-  { label: "Home", to: "/" },
+  { label: "Home",    to: "/" },
   { label: "Gallery", to: "/gallery" },
 ];
+
+function CakeLogo() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+      {/* Layer 3 (top) */}
+      <rect x="11" y="4"  width="8"  height="7"  rx="2"   fill="#00beff"   opacity="0.9" />
+      {/* Layer 2 */}
+      <rect x="7"  y="10" width="16" height="8"  rx="2.5" fill="#00a2dc"   />
+      {/* Layer 1 (bottom) */}
+      <rect x="3"  y="17" width="24" height="10" rx="3"   fill="#0088bb"   />
+      {/* Frosting stripe L3-L2 */}
+      <rect x="7"  y="9"  width="16" height="2"  rx="1"   fill="white" opacity="0.7" />
+      {/* Frosting stripe L2-L1 */}
+      <rect x="3"  y="16" width="24" height="2"  rx="1"   fill="white" opacity="0.7" />
+      {/* Candle 1 */}
+      <rect x="12" y="0"  width="3"  height="5"  rx="1.5" fill="#ff6b9d"  />
+      {/* Candle 2 */}
+      <rect x="18" y="1"  width="3"  height="4"  rx="1.5" fill="#ffd93d"  />
+      {/* Flames */}
+      <ellipse cx="13.5" cy="0"  rx="2" ry="2.5" fill="#ffb300" opacity="0.9" />
+      <ellipse cx="19.5" cy="1"  rx="2" ry="2.5" fill="#ffb300" opacity="0.9" />
+    </svg>
+  );
+}
 
 export default function Navbar() {
   const { state } = useStore();
   const { settings } = state;
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
-    }
+    function onScroll() { setScrolled(window.scrollY > 20); }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  function handleOrder() {
-    openOrderChannel(settings, "General inquiry", "Custom");
-  }
+  function handleOrder() { openOrderChannel(settings, "General inquiry", "Custom"); }
 
-  const OrderIcon =
-    settings.orderChannel === "whatsapp" ? FaWhatsapp : FaFacebook;
+  const OrderIcon = settings.orderChannel === "whatsapp" ? FaWhatsapp : FaFacebook;
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-caramel-800/30 ${
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-caramel-800/20 ${
           scrolled
             ? "bg-choco-900/95 backdrop-blur-2xl shadow-lg shadow-black/40"
             : "bg-choco-900/80 backdrop-blur-xl"
@@ -43,8 +61,8 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-2xl">🎂</span>
+          <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <CakeLogo />
             <span className="font-dancing text-2xl md:text-3xl font-bold text-gradient">
               {settings.shopName}
             </span>
@@ -74,10 +92,10 @@ export default function Navbar() {
               Order Now
             </button>
 
-            {/* Mobile hamburger */}
+            {/* Hamburger */}
             <button
               onClick={() => setMenuOpen(true)}
-              className="md:hidden flex flex-col gap-1.5 p-2 text-caramel-400"
+              className="md:hidden flex flex-col gap-1.5 p-2 text-caramel-400 min-w-[44px] min-h-[44px] items-center justify-center"
               aria-label="Open menu"
             >
               <span className="block w-6 h-0.5 bg-caramel-400 rounded" />
@@ -88,7 +106,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile full-screen menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -98,63 +116,55 @@ export default function Navbar() {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            {/* Close button */}
             <div className="flex justify-end p-6">
               <button
                 onClick={() => setMenuOpen(false)}
-                className="text-caramel-400 hover:text-caramel-200 transition-colors"
+                className="text-caramel-400 hover:text-caramel-200 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Close menu"
               >
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="18" y1="6"  x2="6"  y2="18" />
+                  <line x1="6"  y1="6"  x2="18" y2="18" />
                 </svg>
               </button>
             </div>
 
-            {/* Links */}
             <div className="flex-1 flex flex-col items-center justify-center gap-10">
-              {[...NAV_LINKS, { label: "Order Now", to: null }].map(
-                (link, i) => (
-                  <motion.div
-                    key={link.label}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 + 0.1 }}
-                  >
-                    {link.to ? (
-                      <Link
-                        to={link.to}
-                        onClick={() => setMenuOpen(false)}
-                        className="font-playfair text-4xl text-white hover:text-caramel-400 transition-colors duration-200"
-                      >
-                        {link.label}
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setMenuOpen(false);
-                          handleOrder();
-                        }}
-                        className="btn-primary w-48 flex items-center justify-center gap-2 text-lg"
-                      >
-                        <OrderIcon size={20} />
-                        {link.label}
-                      </button>
-                    )}
-                  </motion.div>
-                )
-              )}
+              {[...NAV_LINKS, { label: "Order Now", to: null }].map((link, i) => (
+                <motion.div
+                  key={link.label}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 + 0.1 }}
+                >
+                  {link.to ? (
+                    <Link
+                      to={link.to}
+                      onClick={() => setMenuOpen(false)}
+                      className="font-playfair text-4xl text-white hover:text-caramel-400 transition-colors duration-200"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => { setMenuOpen(false); handleOrder(); }}
+                      className="btn-primary w-48 flex items-center justify-center gap-2 text-lg"
+                    >
+                      <OrderIcon size={20} />
+                      {link.label}
+                    </button>
+                  )}
+                </motion.div>
+              ))}
             </div>
 
-            {/* Social icons row */}
             <div className="flex justify-center gap-4 pb-10">
               {settings.whatsappNumber && (
                 <a
                   href={`https://wa.me/${settings.whatsappNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all"
+                  className="w-12 h-12 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all"
                 >
                   <FaWhatsapp size={18} />
                 </a>
@@ -164,7 +174,7 @@ export default function Navbar() {
                   href={settings.facebookPageUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all"
+                  className="w-12 h-12 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all"
                 >
                   <FaFacebook size={18} />
                 </a>

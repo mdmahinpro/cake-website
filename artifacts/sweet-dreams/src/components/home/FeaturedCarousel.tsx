@@ -24,9 +24,10 @@ export default function FeaturedCarousel() {
   const { state } = useStore();
   const { gallery } = state;
 
-  const items = gallery.filter((g) => g.featured).length > 0
-    ? gallery.filter((g) => g.featured)
-    : gallery.slice(0, 6);
+  const items =
+    gallery.filter((g) => g.featured).length > 0
+      ? gallery.filter((g) => g.featured)
+      : gallery.slice(0, 6);
 
   const visibleCount = useVisibleCount();
   const [index, setIndex] = useState(0);
@@ -49,26 +50,34 @@ export default function FeaturedCarousel() {
   useEffect(() => {
     if (paused || items.length <= visibleCount) return;
     timerRef.current = setInterval(goNext, 4000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [paused, goNext, items.length, visibleCount]);
 
   const visible = items.slice(index, index + visibleCount);
 
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 120 : -120, opacity: 0 }),
+    enter:  (dir: number) => ({ x: dir > 0 ? 120 : -120, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -120 : 120, opacity: 0 }),
+    exit:   (dir: number) => ({ x: dir > 0 ? -120 : 120, opacity: 0 }),
   };
 
   if (items.length === 0) return null;
 
+  const navBtn =
+    "absolute top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200";
+
   return (
-    <section className="py-20 overflow-hidden" style={{ background: "rgba(45,22,0,0.5)" }}>
+    <section
+      className="py-20 overflow-hidden"
+      style={{ background: "rgba(3,21,37,0.7)" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center mb-12">
           <p className="section-subtitle mb-2">Our Most Loved Cakes</p>
           <h2 className="section-title">Featured Creations</h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-caramel-400 to-rose-cake mx-auto mt-4 rounded-full" />
+          <div className="w-24 h-1 bg-gradient-to-r from-caramel-400 to-caramel-200 mx-auto mt-4 rounded-full" />
         </AnimatedSection>
 
         <div
@@ -79,8 +88,8 @@ export default function FeaturedCarousel() {
           {items.length > visibleCount && (
             <motion.button
               onClick={goPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200"
-              style={{ background: "#2d1600" }}
+              className={`${navBtn} -translate-x-2`}
+              style={{ background: "#031525" }}
               whileTap={{ scale: 0.9 }}
             >
               <FaChevronLeft size={16} />
@@ -100,14 +109,14 @@ export default function FeaturedCarousel() {
                 className="grid gap-4 md:gap-6"
                 style={{ gridTemplateColumns: `repeat(${visibleCount}, minmax(0, 1fr))` }}
               >
-                {visible.map((item, i) => (
+                {visible.map((item) => (
                   <motion.div
                     key={item.id}
-                    className="rounded-3xl overflow-hidden cursor-pointer"
-                    style={{ background: "#2d1600" }}
-                    whileHover={{ y: -6 }}
+                    className="rounded-3xl overflow-hidden"
+                    style={{ background: "#031525", border: "1px solid rgba(0,190,255,0.15)" }}
+                    whileHover={{ y: -8, boxShadow: "0 24px 48px rgba(0,0,0,0.5), 0 0 30px rgba(0,190,255,0.12)" }}
                     whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    transition={{ type: "spring", stiffness: 280, damping: 22 }}
                   >
                     {item.imageUrl ? (
                       <img
@@ -117,15 +126,17 @@ export default function FeaturedCarousel() {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full aspect-square bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center text-6xl">
-                        🎂
+                      <div className="w-full aspect-square bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center">
+                        <span className="text-caramel-400/40 text-6xl font-playfair">?</span>
                       </div>
                     )}
                     <div className="p-4 flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm text-caramel-100 line-clamp-2 flex-1">{item.caption}</p>
-                        <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-choco-900"
-                          style={{ background: "#d4a574" }}>
+                        <span
+                          className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-choco-900"
+                          style={{ background: "#00beff" }}
+                        >
                           {item.category}
                         </span>
                       </div>
@@ -140,27 +151,33 @@ export default function FeaturedCarousel() {
           {items.length > visibleCount && (
             <motion.button
               onClick={goNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200"
-              style={{ background: "#2d1600" }}
+              className={`${navBtn} translate-x-2`}
+              style={{ background: "#031525" }}
               whileTap={{ scale: 0.9 }}
             >
               <FaChevronRight size={16} />
             </motion.button>
           )}
 
-          {/* Dots with larger tap targets */}
           {items.length > visibleCount && (
             <div className="flex justify-center gap-1 mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => { setDirection(i > index ? 1 : -1); setIndex(i); }}
+                  onClick={() => {
+                    setDirection(i > index ? 1 : -1);
+                    setIndex(i);
+                  }}
                   className="p-2 flex items-center justify-center"
                   aria-label={`Slide ${i + 1}`}
                 >
-                  <span className={`block rounded-full transition-all duration-200 ${
-                    i === index ? "w-6 h-2.5 bg-caramel-400" : "w-2.5 h-2.5 border border-caramel-400"
-                  }`} />
+                  <span
+                    className={`block rounded-full transition-all duration-200 ${
+                      i === index
+                        ? "w-6 h-2.5 bg-caramel-400"
+                        : "w-2.5 h-2.5 border border-caramel-400"
+                    }`}
+                  />
                 </button>
               ))}
             </div>

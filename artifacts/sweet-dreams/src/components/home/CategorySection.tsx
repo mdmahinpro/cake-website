@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { FiCoffee, FiStar, FiLayers, FiEdit3 } from "react-icons/fi";
 import AnimatedSection from "../shared/AnimatedSection";
 import { useStore } from "../../store/useStore";
+import type { IconType } from "react-icons";
 
 interface Category {
   slug: string;
   name: string;
-  emoji: string;
+  Icon: IconType;
   gradient: string;
 }
 
@@ -14,25 +16,25 @@ const DEFAULT_CATEGORIES: Category[] = [
   {
     slug: "chocolate",
     name: "Chocolate",
-    emoji: "🍫",
+    Icon: FiCoffee,
     gradient: "from-choco-800 to-choco-600",
   },
   {
     slug: "vanilla",
     name: "Vanilla",
-    emoji: "🍰",
+    Icon: FiStar,
     gradient: "from-amber-900 to-yellow-800",
   },
   {
     slug: "overloaded",
     name: "Overloaded",
-    emoji: "🎉",
+    Icon: FiLayers,
     gradient: "from-stone-900 to-choco-800",
   },
   {
     slug: "custom",
     name: "Custom Design",
-    emoji: "✨",
+    Icon: FiEdit3,
     gradient: "from-rose-900 to-pink-900",
   },
 ];
@@ -107,7 +109,9 @@ export default function CategorySection() {
 
                   {/* Category info */}
                   <div className="absolute bottom-4 left-4 right-4">
-                    <span className="text-2xl block mb-1">{cat.emoji}</span>
+                    <span className="block mb-1.5 text-caramel-300">
+                      <cat.Icon size={22} />
+                    </span>
                     <p className="font-playfair text-xl font-bold text-white leading-tight">
                       {cat.name}
                     </p>

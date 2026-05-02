@@ -42,8 +42,10 @@ export default function DeliveredSection() {
                   loading="lazy"
                 />
               ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center text-5xl">
-                  🎂
+                <div className="w-full h-48 bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center">
+                  <span className="font-playfair text-5xl font-bold text-caramel-400/30">
+                    Sweet Dreams
+                  </span>
                 </div>
               )}
 

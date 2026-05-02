@@ -12,8 +12,8 @@ interface Sparkle {
   color: string;
 }
 
-const CHARS = ["✦", "✧", "★"];
-const COLORS = ["#d4a574", "#f4a7b9", "#fef9f0", "#e8c4a0"];
+const CHARS = ["✦", "✧", "★", "◆"];
+const COLORS = ["#00beff", "#4dd9ff", "#80e0ff", "#b3efff", "#e0f8ff", "#f4a7b9"];
 
 function rand(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -21,13 +21,13 @@ function rand(min: number, max: number) {
 
 export default function SparkleField() {
   const sparkles = useMemo<Sparkle[]>(() => {
-    return Array.from({ length: 25 }, (_, i) => ({
+    return Array.from({ length: 28 }, (_, i) => ({
       id: i,
       char: CHARS[Math.floor(Math.random() * CHARS.length)],
       top: `${rand(0, 100)}%`,
       left: `${rand(0, 100)}%`,
-      size: `${rand(8, 22)}px`,
-      opacity: rand(0.08, 0.35),
+      size: `${rand(7, 20)}px`,
+      opacity: rand(0.06, 0.32),
       delay: `${rand(0, 4)}s`,
       duration: `${rand(2, 5)}s`,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
