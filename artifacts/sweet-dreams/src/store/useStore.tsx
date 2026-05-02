@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react";
+import { DEMO_GALLERY, DEMO_CAROUSEL } from "../data/demoData";
 
 export interface CakeItem {
   id: string;
@@ -71,10 +72,37 @@ const defaultState: StoreState = {
 };
 
 const STORAGE_KEY = "sweet_dreams_store";
+const DEMO_KEY = "cake-demo-loaded";
 
 function loadFromStorage(): StoreState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    const demoLoaded = localStorage.getItem(DEMO_KEY);
+
+    // If demo has never been seeded, seed it now (handles fresh installs
+    // and cases where the store existed but had an empty gallery)
+    if (!demoLoaded) {
+      localStorage.setItem(DEMO_KEY, "true");
+      const base = raw ? (JSON.parse(raw) as Partial<StoreState>) : null;
+      const hasItems = (base?.gallery?.length ?? 0) > 0 || (base?.carousel?.length ?? 0) > 0;
+      if (!hasItems) {
+        return {
+          settings: { ...defaultSettings, ...(base?.settings ?? {}) },
+          gallery: DEMO_GALLERY,
+          carousel: DEMO_CAROUSEL,
+          isAuthenticated: false,
+        };
+      }
+      if (base) {
+        return {
+          settings: { ...defaultSettings, ...base.settings },
+          gallery: base.gallery ?? [],
+          carousel: base.carousel ?? [],
+          isAuthenticated: false,
+        };
+      }
+    }
+
     if (!raw) return defaultState;
     const parsed = JSON.parse(raw) as Partial<StoreState>;
     return {

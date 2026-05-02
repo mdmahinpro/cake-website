@@ -1,0 +1,83 @@
+Add demo data and do full mobile polish pass.
+
+DEMO DATA src/data/demoData.js:
+Export DEMO_GALLERY array of 12 items using Unsplash cake images:
+
+export const DEMO_GALLERY = [
+  { id: 1, type: 'gallery', category: 'Chocolate', imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format', caption: 'Rich triple chocolate layer cake with ganache drip and fresh berries', isFeatured: true, youtubeUrl: '', sortOrder: 1, createdAt: Date.now() },
+  { id: 2, type: 'gallery', category: 'Vanilla', imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&auto=format', caption: 'Classic vanilla buttercream cake with floral decoration', isFeatured: true, youtubeUrl: '', sortOrder: 2, createdAt: Date.now() },
+  { id: 3, type: 'delivered', category: 'Birthday', imageUrl: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&auto=format', caption: 'Delivered fresh to Dhaka! Birthday surprise for little Rafa 🎈', isFeatured: true, youtubeUrl: '', sortOrder: 3, createdAt: Date.now() },
+  { id: 4, type: 'gallery', category: 'Overloaded Chocolate', imageUrl: 'https://images.unsplash.com/photo-1587248720327-8eb72564be1e?w=600&auto=format', caption: 'Overloaded chocolate fantasy for the true chocoholic', isFeatured: true, youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', sortOrder: 4, createdAt: Date.now() },
+  { id: 5, type: 'delivered', category: 'Wedding', imageUrl: 'https://images.unsplash.com/photo-1547414368-ac947d00b91d?w=600&auto=format', caption: 'Elegant 4-tier wedding cake delivered to the venue 💍', isFeatured: false, youtubeUrl: '', sortOrder: 5, createdAt: Date.now() },
+  { id: 6, type: 'gallery', category: 'Custom', imageUrl: 'https://images.unsplash.com/photo-1519869325930-281384150729?w=600&auto=format', caption: 'Custom drip cake with gold accents and macarons', isFeatured: true, youtubeUrl: '', sortOrder: 6, createdAt: Date.now() },
+  { id: 7, type: 'gallery', category: 'Vanilla', imageUrl: 'https://images.unsplash.com/photo-1562777717-dc6984f65a63?w=600&auto=format', caption: 'Dreamy pink rose vanilla cake for a princess birthday', isFeatured: false, youtubeUrl: '', sortOrder: 7, createdAt: Date.now() },
+  { id: 8, type: 'delivered', category: 'Birthday', imageUrl: 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=600&auto=format', caption: 'Surprise delivery complete! Nadia loved her cake ❤️', isFeatured: false, youtubeUrl: '', sortOrder: 8, createdAt: Date.now() },
+  { id: 9, type: 'gallery', category: 'Chocolate', imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format', caption: 'Dark chocolate drip with salted caramel and crunch', isFeatured: true, youtubeUrl: '', sortOrder: 9, createdAt: Date.now() },
+  { id: 10, type: 'gallery', category: 'Custom', imageUrl: 'https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=600&auto=format', caption: 'Hand-painted watercolor cake - truly one of a kind', isFeatured: false, youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', sortOrder: 10, createdAt: Date.now() },
+  { id: 11, type: 'delivered', category: 'Custom', imageUrl: 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=600&auto=format', caption: 'On-time delivery in Dinajpur - customer was speechless!', isFeatured: false, youtubeUrl: '', sortOrder: 11, createdAt: Date.now() },
+  { id: 12, type: 'gallery', category: 'Wedding', imageUrl: 'https://images.unsplash.com/photo-1616690248468-e4f544a71e5b?w=600&auto=format', caption: 'White elegance wedding cake with gold leaf details', isFeatured: false, youtubeUrl: '', sortOrder: 12, createdAt: Date.now() },
+];
+
+export const DEMO_CAROUSEL = [
+  { id: 1, imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format', title: 'Sweet Dreams Cakes', subtitle: 'Handcrafted with Love', caption: 'Every cake tells a story', isActive: true, sortOrder: 1 },
+  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&auto=format', title: 'Custom Designs', subtitle: 'Made Just For You', caption: 'Your dream cake awaits', isActive: true, sortOrder: 2 },
+  { id: 3, imageUrl: 'https://images.unsplash.com/photo-1519869325930-281384150729?w=800&auto=format', title: 'Fresh Daily', subtitle: 'Baked With Heart', caption: 'Order yours today', isActive: true, sortOrder: 3 },
+];
+
+In useStore.js: on init, if localStorage is completely empty, load DEMO_GALLERY and DEMO_CAROUSEL into the store. Set localStorage key 'cake-demo-loaded' = 'true' to avoid re-loading.
+
+MOBILE POLISH - audit every component:
+
+1. OVERFLOW FIX:
+   - Every component wrapping div must have overflow-x: hidden on containers
+   - Body: overflow-x: hidden always
+   - No element wider than 100vw
+
+2. TOUCH TARGETS:
+   - Every button/link must be min-h-[44px] min-w-[44px]
+   - Add py-3 to small buttons to ensure tap target
+
+3. NAVBAR MOBILE:
+   - Test hamburger menu at 375px
+   - All links must be large enough to tap easily
+   - Menu must close when link is clicked
+
+4. GALLERY MASONRY:
+   - At 375px must be exactly 2 columns
+   - No card overflow
+   - Order button must not overflow card bounds
+
+5. LIGHTBOX MOBILE:
+   - Image must not overflow screen
+   - Bottom panel must not push image off screen
+   - Navigation arrows hidden on mobile (swipe only)
+   - Close button large enough to tap (48x48 minimum)
+
+6. HERO MOBILE:
+   - Single column, text centered
+   - Decorative circle smaller (w-40 h-40) on mobile
+   - Buttons stack vertically, full width on mobile
+
+7. CAROUSEL MOBILE:
+   - Single item, full width
+   - Navigation dots larger tap area (p-2 around each dot)
+
+8. ADMIN MOBILE:
+   - Sidebar as full-screen overlay on mobile
+   - All form inputs full width
+   - Action buttons full width
+   - Toggle switches centered and large
+
+9. FONTS:
+   - Minimum 14px body, 12px captions, 16px inputs (prevents zoom on iOS)
+
+10. IMAGES:
+   - All images use loading="lazy" attribute
+
+FRAMER-MOTION FINAL POLISH:
+- Every section on both pages has scroll-triggered animation
+- Stagger children in grids: delay = index * 0.05s, max 0.4s
+- All buttons have whileTap: { scale: 0.95 }
+- All cards have whileHover: { y: -6 }
+- Page transitions: wrap each page in motion.div with initial/animate/exit
+- AdminPage sections switch with AnimatePresence

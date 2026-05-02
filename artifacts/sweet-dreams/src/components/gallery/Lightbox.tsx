@@ -13,15 +13,7 @@ interface LightboxProps {
   onPrev: () => void;
 }
 
-export default function Lightbox({
-  item,
-  index,
-  items,
-  onClose,
-  onNext,
-  onPrev,
-}: LightboxProps) {
-  // Keyboard navigation
+export default function Lightbox({ item, index, items, onClose, onNext, onPrev }: LightboxProps) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -29,20 +21,19 @@ export default function Lightbox({
       if (e.key === "ArrowRight") onNext();
     }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
   }, [onClose, onNext, onPrev]);
 
-  // Touch/swipe
   useEffect(() => {
     let startX = 0;
-    const handleTouchStart = (e: TouchEvent) => {
-      startX = e.touches[0].clientX;
-    };
+    const handleTouchStart = (e: TouchEvent) => { startX = e.touches[0].clientX; };
     const handleTouchEnd = (e: TouchEvent) => {
       const diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        diff > 0 ? onNext() : onPrev();
-      }
+      if (Math.abs(diff) > 50) { diff > 0 ? onNext() : onPrev(); }
     };
     document.addEventListener("touchstart", handleTouchStart, { passive: true });
     document.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -64,24 +55,25 @@ export default function Lightbox({
       onClick={onClose}
     >
       {/* Counter badge */}
-      <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-sm text-white"
+      <div className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-sm text-white select-none"
         style={{ background: "rgba(0,0,0,0.6)" }}>
         {index + 1} / {items.length}
       </div>
 
-      {/* Close button */}
+      {/* Close button — 48×48 minimum tap target */}
       <motion.button
-        className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-white"
+        className="absolute top-3 right-3 z-10 w-12 h-12 rounded-full flex items-center justify-center text-white"
         style={{ background: "rgba(255,255,255,0.10)" }}
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        whileHover={{ scale: 1.1, background: "rgba(255,255,255,0.20)" }}
+        whileHover={{ background: "rgba(255,255,255,0.20)" }}
+        whileTap={{ scale: 0.9 }}
       >
-        <FaTimes size={18} />
+        <FaTimes size={20} />
       </motion.button>
 
       {/* Image area */}
       <div
-        className="flex-1 flex items-center justify-center p-4 relative"
+        className="flex-1 flex items-center justify-center p-4 relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <AnimatePresence mode="wait">
@@ -89,7 +81,8 @@ export default function Lightbox({
             key={item.id}
             src={item.imageUrl}
             alt={item.caption}
-            className="max-w-full max-h-[70vh] object-contain rounded-2xl"
+            className="max-w-full max-h-[65vh] object-contain rounded-2xl"
+            loading="lazy"
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.85, opacity: 0 }}
@@ -97,56 +90,48 @@ export default function Lightbox({
           />
         </AnimatePresence>
 
-        {/* Prev arrow */}
+        {/* Prev/Next arrows — hidden on mobile, visible on md+ */}
         {items.length > 1 && (
-          <button
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:bg-caramel-400/80"
-            style={{ background: "rgba(255,255,255,0.10)" }}
-            onClick={(e) => { e.stopPropagation(); onPrev(); }}
-          >
-            <FaChevronLeft size={20} />
-          </button>
-        )}
-
-        {/* Next arrow */}
-        {items.length > 1 && (
-          <button
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:bg-caramel-400/80"
-            style={{ background: "rgba(255,255,255,0.10)" }}
-            onClick={(e) => { e.stopPropagation(); onNext(); }}
-          >
-            <FaChevronRight size={20} />
-          </button>
+          <>
+            <button
+              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full items-center justify-center text-white transition-all duration-200 hover:bg-caramel-400/80"
+              style={{ background: "rgba(255,255,255,0.10)" }}
+              onClick={(e) => { e.stopPropagation(); onPrev(); }}
+            >
+              <FaChevronLeft size={20} />
+            </button>
+            <button
+              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full items-center justify-center text-white transition-all duration-200 hover:bg-caramel-400/80"
+              style={{ background: "rgba(255,255,255,0.10)" }}
+              onClick={(e) => { e.stopPropagation(); onNext(); }}
+            >
+              <FaChevronRight size={20} />
+            </button>
+          </>
         )}
       </div>
 
-      {/* Bottom info panel */}
+      {/* Bottom panel */}
       <div
-        className="rounded-t-3xl p-4 pb-6"
-        style={{ background: "rgba(26,10,0,0.95)" }}
+        className="rounded-t-3xl p-4 pb-safe-bottom"
+        style={{ background: "rgba(26,10,0,0.97)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="font-poppins text-base text-white mb-3">{item.caption}</p>
-        <div className="flex flex-wrap items-center gap-3">
+        <p className="font-poppins text-sm sm:text-base text-white mb-3 leading-relaxed">{item.caption}</p>
+        <div className="flex flex-wrap items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-medium text-white bg-caramel-400/90 capitalize">
             {item.category}
           </span>
           {youtubeUrl && (
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-red-600 hover:bg-red-500 transition-colors"
-            >
+            <a href={youtubeUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-red-600 hover:bg-red-500 transition-colors">
               <FaYoutube size={14} />
               Watch Making Video
             </a>
           )}
           <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm text-caramel-400">
-              {index + 1} / {items.length}
-            </span>
-            <OrderButton caption={item.caption} category={item.category} size="lg" />
+            <span className="text-sm text-caramel-400">{index + 1} / {items.length}</span>
+            <OrderButton caption={item.caption} category={item.category} size="md" />
           </div>
         </div>
       </div>

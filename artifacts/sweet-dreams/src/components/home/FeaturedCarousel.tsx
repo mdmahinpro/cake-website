@@ -49,9 +49,7 @@ export default function FeaturedCarousel() {
   useEffect(() => {
     if (paused || items.length <= visibleCount) return;
     timerRef.current = setInterval(goNext, 4000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [paused, goNext, items.length, visibleCount]);
 
   const visible = items.slice(index, index + visibleCount);
@@ -65,7 +63,7 @@ export default function FeaturedCarousel() {
   if (items.length === 0) return null;
 
   return (
-    <section className="py-20" style={{ background: "rgba(45,22,0,0.5)" }}>
+    <section className="py-20 overflow-hidden" style={{ background: "rgba(45,22,0,0.5)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center mb-12">
           <p className="section-subtitle mb-2">Our Most Loved Cakes</p>
@@ -78,15 +76,15 @@ export default function FeaturedCarousel() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {/* Prev button */}
           {items.length > visibleCount && (
-            <button
+            <motion.button
               onClick={goPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200"
               style={{ background: "#2d1600" }}
+              whileTap={{ scale: 0.9 }}
             >
               <FaChevronLeft size={16} />
-            </button>
+            </motion.button>
           )}
 
           <div className="overflow-hidden">
@@ -99,17 +97,16 @@ export default function FeaturedCarousel() {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className={`grid gap-4 md:gap-6`}
-                style={{
-                  gridTemplateColumns: `repeat(${visibleCount}, minmax(0, 1fr))`,
-                }}
+                className="grid gap-4 md:gap-6"
+                style={{ gridTemplateColumns: `repeat(${visibleCount}, minmax(0, 1fr))` }}
               >
-                {visible.map((item) => (
+                {visible.map((item, i) => (
                   <motion.div
                     key={item.id}
                     className="rounded-3xl overflow-hidden cursor-pointer"
                     style={{ background: "#2d1600" }}
-                    whileHover={{ y: -8 }}
+                    whileHover={{ y: -6 }}
+                    whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
                     {item.imageUrl ? (
@@ -117,6 +114,7 @@ export default function FeaturedCarousel() {
                         src={item.imageUrl}
                         alt={item.caption}
                         className="w-full aspect-square object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full aspect-square bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center text-6xl">
@@ -125,9 +123,7 @@ export default function FeaturedCarousel() {
                     )}
                     <div className="p-4 flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm text-caramel-100 line-clamp-2 flex-1">
-                          {item.caption}
-                        </p>
+                        <p className="text-sm text-caramel-100 line-clamp-2 flex-1">{item.caption}</p>
                         <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-choco-900"
                           style={{ background: "#d4a574" }}>
                           {item.category}
@@ -141,33 +137,31 @@ export default function FeaturedCarousel() {
             </AnimatePresence>
           </div>
 
-          {/* Next button */}
           {items.length > visibleCount && (
-            <button
+            <motion.button
               onClick={goNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200"
               style={{ background: "#2d1600" }}
+              whileTap={{ scale: 0.9 }}
             >
               <FaChevronRight size={16} />
-            </button>
+            </motion.button>
           )}
 
-          {/* Dots */}
+          {/* Dots with larger tap targets */}
           {items.length > visibleCount && (
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="flex justify-center gap-1 mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => {
-                    setDirection(i > index ? 1 : -1);
-                    setIndex(i);
-                  }}
-                  className={`rounded-full transition-all duration-200 ${
-                    i === index
-                      ? "w-6 h-2.5 bg-caramel-400"
-                      : "w-2.5 h-2.5 border border-caramel-400"
-                  }`}
-                />
+                  onClick={() => { setDirection(i > index ? 1 : -1); setIndex(i); }}
+                  className="p-2 flex items-center justify-center"
+                  aria-label={`Slide ${i + 1}`}
+                >
+                  <span className={`block rounded-full transition-all duration-200 ${
+                    i === index ? "w-6 h-2.5 bg-caramel-400" : "w-2.5 h-2.5 border border-caramel-400"
+                  }`} />
+                </button>
               ))}
             </div>
           )}

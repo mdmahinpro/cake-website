@@ -45,9 +45,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <span className="text-2xl">🎂</span>
-            <span
-              className="font-dancing text-2xl md:text-3xl font-bold bg-gradient-to-r from-caramel-300 to-rose-cake bg-clip-text text-transparent"
-            >
+            <span className="font-dancing text-2xl md:text-3xl font-bold text-gradient">
               {settings.shopName}
             </span>
           </Link>

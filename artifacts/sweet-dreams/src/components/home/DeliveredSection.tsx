@@ -39,6 +39,7 @@ export default function DeliveredSection() {
                   src={item.imageUrl}
                   alt={item.caption}
                   className="w-full object-cover brightness-95 saturate-110"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-48 bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center text-5xl">

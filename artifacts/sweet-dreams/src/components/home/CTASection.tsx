@@ -56,7 +56,7 @@ export default function CTASection() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-colors duration-300 min-h-[52px]"
               style={{
                 background: "linear-gradient(to right, #22c55e, #15803d)",
                 boxShadow: "0 10px 30px rgba(34,197,94,0.3)",
@@ -78,7 +78,7 @@ export default function CTASection() {
               href={facebookUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+              className="flex items-center justify-center gap-3 px-7 py-4 rounded-full text-white font-semibold shadow-xl transition-colors duration-300 min-h-[52px]"
               style={{
                 background: "linear-gradient(to right, #3b82f6, #1d4ed8)",
                 boxShadow: "0 10px 30px rgba(59,130,246,0.3)",
