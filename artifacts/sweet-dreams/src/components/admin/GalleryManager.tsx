@@ -226,8 +226,20 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
               {/* Featured toggle */}
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setForm((f) => ({ ...f, featured: !f.featured }))}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-300 flex-shrink-0 ${form.featured ? "bg-caramel-400" : "bg-choco-700"}`}>
-                  <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${form.featured ? "translate-x-6" : "translate-x-0.5"}`} />
+                  aria-pressed={form.featured}
+                  className="relative rounded-full flex-shrink-0 focus:outline-none"
+                  style={{
+                    width: 44, height: 22,
+                    background: form.featured ? "#00beff" : "#031525",
+                    border: `1.5px solid ${form.featured ? "#00beff" : "rgba(0,190,255,0.25)"}`,
+                    transition: "background 0.25s, border-color 0.25s",
+                  }}>
+                  <motion.span
+                    className="absolute rounded-full bg-white shadow"
+                    style={{ width: 16, height: 16, top: 2 }}
+                    animate={{ x: form.featured ? 23 : 3 }}
+                    transition={{ type: "spring", stiffness: 600, damping: 38 }}
+                  />
                 </button>
                 <span className="text-sm text-caramel-300">Mark as Featured (shows in Featured Creations)</span>
               </div>
