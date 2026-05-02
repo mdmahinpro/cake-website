@@ -36,10 +36,9 @@ const TESTIMONIALS = [
   },
 ];
 
-/* Theme-specific palette for the three avatar accents */
 const ACCENT_PALETTES = {
   navy:      ["#00beff", "#4dd9ff", "#80e0ff"],
-  chocolate: ["#d4a03c", "#e8c060", "#c87040"],
+  chocolate: ["#f0d9a8", "#f5e6c0", "#d8bc88"],
 } as const;
 
 function StarRow({ count, starColor }: { count: number; starColor: string }) {
@@ -79,14 +78,14 @@ export default function TestimonialsSection() {
                   }}
                   transition={{ type: "spring", stiffness: 260, damping: 22 }}
                 >
-                  {/* Avatar + name */}
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 select-none"
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 select-none"
                       style={{
-                        background: `linear-gradient(135deg, ${accent}55, ${accent}cc)`,
-                        border: `1.5px solid ${accent}60`,
-                        boxShadow: `0 0 16px ${accent}30`,
+                        background: `linear-gradient(135deg, ${accent}44, ${accent}bb)`,
+                        border: `1.5px solid ${accent}55`,
+                        boxShadow: `0 0 16px ${accent}22`,
+                        color: siteTheme === "chocolate" ? "#2a1006" : "white",
                       }}
                     >
                       {t.initials}
@@ -103,7 +102,6 @@ export default function TestimonialsSection() {
                     &ldquo;{t.review}&rdquo;
                   </p>
 
-                  {/* Bottom accent line */}
                   <div
                     className="h-px w-16 rounded-full"
                     style={{ background: `linear-gradient(to right, ${accent}, transparent)` }}

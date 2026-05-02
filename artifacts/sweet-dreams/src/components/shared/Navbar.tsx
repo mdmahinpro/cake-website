@@ -27,10 +27,13 @@ function CakeLogo() {
   );
 }
 
-/* ── Compact two-dot theme toggle ── */
+/* ── Two-dot theme toggle pill ── */
 function ThemeToggle() {
   const { siteTheme, toggleTheme } = useTheme();
   const isNavy = siteTheme === "navy";
+
+  const pillBg     = isNavy ? "rgba(0,190,255,0.08)"    : "rgba(240,217,168,0.1)";
+  const pillBorder = isNavy ? "rgba(0,190,255,0.25)"    : "rgba(240,217,168,0.3)";
 
   return (
     <motion.button
@@ -39,30 +42,22 @@ function ThemeToggle() {
       title={isNavy ? "Switch to Chocolate theme" : "Switch to Navy theme"}
       aria-label="Toggle site theme"
       className="relative flex items-center gap-1.5 h-7 px-2.5 rounded-full transition-all duration-300 select-none focus:outline-none"
-      style={{
-        background: isNavy
-          ? "rgba(0,190,255,0.08)"
-          : "rgba(212,160,60,0.1)",
-        border: isNavy
-          ? "1px solid rgba(0,190,255,0.25)"
-          : "1px solid rgba(212,160,60,0.3)",
-      }}
+      style={{ background: pillBg, border: `1px solid ${pillBorder}` }}
     >
-      {/* Aqua dot — navy theme */}
+      {/* Aqua dot — navy theme active indicator */}
       <motion.span
-        animate={{ scale: isNavy ? 1.25 : 1, opacity: isNavy ? 1 : 0.28 }}
+        animate={{ scale: isNavy ? 1.3 : 1, opacity: isNavy ? 1 : 0.28 }}
         transition={{ duration: 0.25 }}
         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
         style={{ background: "#00beff" }}
       />
-      {/* Divider */}
       <span className="w-px h-3 bg-white/10 flex-shrink-0" />
-      {/* Gold dot — chocolate theme */}
+      {/* Cream dot — chocolate theme active indicator */}
       <motion.span
-        animate={{ scale: !isNavy ? 1.25 : 1, opacity: !isNavy ? 1 : 0.28 }}
+        animate={{ scale: !isNavy ? 1.3 : 1, opacity: !isNavy ? 1 : 0.28 }}
         transition={{ duration: 0.25 }}
         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-        style={{ background: "#d4a03c" }}
+        style={{ background: "#f0d9a8" }}
       />
     </motion.button>
   );
@@ -82,13 +77,12 @@ export default function Navbar() {
   }, []);
 
   function handleOrder() { openOrderChannel(settings, "General inquiry", "Custom"); }
-
   const OrderIcon = settings.orderChannel === "whatsapp" ? FaWhatsapp : FaFacebook;
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-caramel-800/20 ${
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 border-b border-caramel-800/20 ${
           scrolled
             ? "bg-choco-900/95 backdrop-blur-2xl shadow-lg shadow-black/40"
             : "bg-choco-900/80 backdrop-blur-xl"
@@ -119,7 +113,6 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            {/* Theme toggle — visible on all sizes */}
             <ThemeToggle />
 
             <button
@@ -144,7 +137,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile full-screen menu */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -155,7 +148,6 @@ export default function Navbar() {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
             <div className="flex justify-between items-center p-6">
-              {/* Theme toggle in mobile menu */}
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <span className="text-xs font-poppins text-caramel-400/60">
@@ -205,22 +197,14 @@ export default function Navbar() {
 
             <div className="flex justify-center gap-4 pb-10">
               {settings.whatsappNumber && (
-                <a
-                  href={`https://wa.me/${settings.whatsappNumber}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all"
-                >
+                <a href={`https://wa.me/${settings.whatsappNumber}`} target="_blank" rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all">
                   <FaWhatsapp size={18} />
                 </a>
               )}
               {settings.facebookPageUrl && (
-                <a
-                  href={settings.facebookPageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all"
-                >
+                <a href={settings.facebookPageUrl} target="_blank" rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-full border border-caramel-700 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all">
                   <FaFacebook size={18} />
                 </a>
               )}
