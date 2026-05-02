@@ -1,14 +1,13 @@
 import { useStore } from "../../store/useStore";
 
 const CATEGORIES = [
-  { slug: "all", label: "All" },
-  { slug: "chocolate", label: "Chocolate" },
-  { slug: "vanilla", label: "Vanilla" },
-  { slug: "overloaded", label: "Overloaded" },
-  { slug: "custom", label: "Custom" },
-  { slug: "wedding", label: "Wedding" },
-  { slug: "birthday", label: "Birthday" },
-  { slug: "delivered", label: "Delivered Orders" },
+  { slug: "all",         label: "All" },
+  { slug: "chocolate",   label: "Chocolate" },
+  { slug: "vanilla",     label: "Vanilla" },
+  { slug: "anniversary", label: "Anniversary" },
+  { slug: "birthday",    label: "Birthday" },
+  { slug: "wedding",     label: "Wedding" },
+  { slug: "custom",      label: "Customize" },
 ];
 
 /** Checks whether a gallery item matches a filter slug */
@@ -17,7 +16,6 @@ export function matchesFilter(
   slug: string
 ): boolean {
   if (slug === "all") return true;
-  if (slug === "delivered") return item.type === "delivered";
   return item.category.toLowerCase().startsWith(slug.toLowerCase());
 }
 
@@ -46,15 +44,15 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
               <button
                 key={cat.slug}
                 onClick={() => onFilterChange(cat.slug)}
-                className={`flex-shrink-0 flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap min-h-[44px] ${
+                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap min-h-[44px] ${
                   isActive
-                    ? "bg-caramel-400 text-white shadow-lg"
-                    : "border border-caramel-700/50 text-caramel-300 hover:border-caramel-400"
+                    ? "bg-caramel-400 text-choco-900 shadow-lg font-semibold"
+                    : "border border-caramel-700/50 text-caramel-300 hover:border-caramel-400 hover:text-white"
                 }`}
-                style={isActive ? { boxShadow: "0 4px 15px rgba(90,58,24,0.4)" } : {}}
+                style={isActive ? { boxShadow: "0 4px 18px rgba(0,190,255,0.35)" } : {}}
               >
                 {cat.label}
-                <span className="bg-white/10 rounded-full px-1.5 text-xs">
+                <span className={`rounded-full px-1.5 text-[10px] font-bold ${isActive ? "bg-choco-900/20 text-choco-900" : "bg-white/10 text-caramel-300"}`}>
                   {count}
                 </span>
               </button>

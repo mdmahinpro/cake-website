@@ -1,3 +1,4 @@
+import { FiGrid } from "react-icons/fi";
 import GalleryCard from "./GalleryCard";
 import type { CakeItem } from "../../store/useStore";
 
@@ -20,10 +21,14 @@ export default function GalleryGrid({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center py-20 gap-4">
-        <span className="text-8xl animate-bounce-slow">🎂</span>
+      <div className="flex flex-col items-center py-20 gap-4 px-4">
+        <span className="text-caramel-400/40">
+          <FiGrid size={64} />
+        </span>
         <h3 className="font-playfair text-2xl text-white">No cakes found</h3>
-        <p className="text-caramel-300 text-sm">Try a different filter or search term</p>
+        <p className="text-caramel-300 text-sm text-center">
+          Try a different filter or search term
+        </p>
         <button onClick={onClearFilters} className="btn-outline mt-2">
           Clear Filters
         </button>
@@ -32,8 +37,8 @@ export default function GalleryGrid({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-20">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {visible.map((item, i) => (
           <GalleryCard
             key={item.id}
