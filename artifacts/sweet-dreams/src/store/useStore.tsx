@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react";
-import { DEMO_GALLERY, DEMO_CAROUSEL } from "../data/demoData";
+import { DEMO_GALLERY, DEMO_CAROUSEL, DEMO_PRODUCT_CATEGORIES, DEMO_PRODUCTS } from "../data/demoData";
 
 export interface CakeItem {
   id: string;
@@ -8,6 +8,7 @@ export interface CakeItem {
   imageUrl: string;
   featured?: boolean;
   type?: string;
+  review?: string;
 }
 
 export interface CarouselSlide {
@@ -16,6 +17,21 @@ export interface CarouselSlide {
   subtitle: string;
   imageUrl: string;
   ctaText?: string;
+}
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  gradient?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  categoryId: string;
+  caption: string;
+  imageUrl: string;
 }
 
 export interface Settings {
@@ -35,6 +51,8 @@ export interface StoreState {
   settings: Settings;
   gallery: CakeItem[];
   carousel: CarouselSlide[];
+  categories: ProductCategory[];
+  products: Product[];
   isAuthenticated: boolean;
 }
 
@@ -48,6 +66,14 @@ type Action =
   | { type: "ADD_CAROUSEL_SLIDE"; payload: CarouselSlide }
   | { type: "UPDATE_CAROUSEL_SLIDE"; payload: CarouselSlide }
   | { type: "DELETE_CAROUSEL_SLIDE"; payload: string }
+  | { type: "SET_CATEGORIES"; payload: ProductCategory[] }
+  | { type: "ADD_CATEGORY"; payload: ProductCategory }
+  | { type: "UPDATE_CATEGORY"; payload: ProductCategory }
+  | { type: "DELETE_CATEGORY"; payload: string }
+  | { type: "SET_PRODUCTS"; payload: Product[] }
+  | { type: "ADD_PRODUCT"; payload: Product }
+  | { type: "UPDATE_PRODUCT"; payload: Product }
+  | { type: "DELETE_PRODUCT"; payload: string }
   | { type: "SET_AUTHENTICATED"; payload: boolean }
   | { type: "LOAD_STATE"; payload: StoreState };
 
@@ -68,98 +94,92 @@ const defaultState: StoreState = {
   settings: defaultSettings,
   gallery: [],
   carousel: [],
+  categories: [],
+  products: [],
   isAuthenticated: false,
 };
 
 const STORAGE_KEY = "sweet_dreams_store";
 const DEMO_KEY = "cake-demo-loaded";
+const PRODUCTS_DEMO_KEY = "cake-products-loaded";
 
 function loadFromStorage(): StoreState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const demoLoaded = localStorage.getItem(DEMO_KEY);
+    const productsLoaded = localStorage.getItem(PRODUCTS_DEMO_KEY);
 
-    // If demo has never been seeded, seed it now (handles fresh installs
-    // and cases where the store existed but had an empty gallery)
+    const base: Partial<StoreState> = raw ? (JSON.parse(raw) as Partial<StoreState>) : {};
+
+    let gallery = base.gallery ?? [];
+    let carousel = base.carousel ?? [];
+
     if (!demoLoaded) {
       localStorage.setItem(DEMO_KEY, "true");
-      const base = raw ? (JSON.parse(raw) as Partial<StoreState>) : null;
-      const hasItems = (base?.gallery?.length ?? 0) > 0 || (base?.carousel?.length ?? 0) > 0;
-      if (!hasItems) {
-        return {
-          settings: { ...defaultSettings, ...(base?.settings ?? {}) },
-          gallery: DEMO_GALLERY,
-          carousel: DEMO_CAROUSEL,
-          isAuthenticated: false,
-        };
-      }
-      if (base) {
-        return {
-          settings: { ...defaultSettings, ...base.settings },
-          gallery: base.gallery ?? [],
-          carousel: base.carousel ?? [],
-          isAuthenticated: false,
-        };
+      if (gallery.length === 0 && carousel.length === 0) {
+        gallery = DEMO_GALLERY;
+        carousel = DEMO_CAROUSEL;
       }
     }
 
-    if (!raw) return defaultState;
-    const parsed = JSON.parse(raw) as Partial<StoreState>;
+    let categories = base.categories ?? [];
+    let products = base.products ?? [];
+
+    if (!productsLoaded) {
+      localStorage.setItem(PRODUCTS_DEMO_KEY, "true");
+      if (categories.length === 0) categories = DEMO_PRODUCT_CATEGORIES;
+      if (products.length === 0) products = DEMO_PRODUCTS;
+    }
+
     return {
-      settings: { ...defaultSettings, ...parsed.settings },
-      gallery: parsed.gallery ?? [],
-      carousel: parsed.carousel ?? [],
+      settings: { ...defaultSettings, ...(base.settings ?? {}) },
+      gallery,
+      carousel,
+      categories,
+      products,
       isAuthenticated: false,
     };
   } catch {
-    return defaultState;
+    return {
+      ...defaultState,
+      gallery: DEMO_GALLERY,
+      carousel: DEMO_CAROUSEL,
+      categories: DEMO_PRODUCT_CATEGORIES,
+      products: DEMO_PRODUCTS,
+    };
   }
 }
 
 function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
-    case "LOAD_STATE":
-      return action.payload;
-    case "SET_SETTINGS":
-      return { ...state, settings: { ...state.settings, ...action.payload } };
-    case "SET_GALLERY":
-      return { ...state, gallery: action.payload };
-    case "ADD_GALLERY_ITEM":
-      return { ...state, gallery: [...state.gallery, action.payload] };
+    case "LOAD_STATE": return action.payload;
+    case "SET_SETTINGS": return { ...state, settings: { ...state.settings, ...action.payload } };
+    case "SET_GALLERY": return { ...state, gallery: action.payload };
+    case "ADD_GALLERY_ITEM": return { ...state, gallery: [...state.gallery, action.payload] };
     case "UPDATE_GALLERY_ITEM":
-      return {
-        ...state,
-        gallery: state.gallery.map((item) =>
-          item.id === action.payload.id ? action.payload : item
-        ),
-      };
+      return { ...state, gallery: state.gallery.map((i) => i.id === action.payload.id ? action.payload : i) };
     case "DELETE_GALLERY_ITEM":
-      return {
-        ...state,
-        gallery: state.gallery.filter((item) => item.id !== action.payload),
-      };
-    case "SET_CAROUSEL":
-      return { ...state, carousel: action.payload };
-    case "ADD_CAROUSEL_SLIDE":
-      return { ...state, carousel: [...state.carousel, action.payload] };
+      return { ...state, gallery: state.gallery.filter((i) => i.id !== action.payload) };
+    case "SET_CAROUSEL": return { ...state, carousel: action.payload };
+    case "ADD_CAROUSEL_SLIDE": return { ...state, carousel: [...state.carousel, action.payload] };
     case "UPDATE_CAROUSEL_SLIDE":
-      return {
-        ...state,
-        carousel: state.carousel.map((slide) =>
-          slide.id === action.payload.id ? action.payload : slide
-        ),
-      };
+      return { ...state, carousel: state.carousel.map((s) => s.id === action.payload.id ? action.payload : s) };
     case "DELETE_CAROUSEL_SLIDE":
-      return {
-        ...state,
-        carousel: state.carousel.filter(
-          (slide) => slide.id !== action.payload
-        ),
-      };
-    case "SET_AUTHENTICATED":
-      return { ...state, isAuthenticated: action.payload };
-    default:
-      return state;
+      return { ...state, carousel: state.carousel.filter((s) => s.id !== action.payload) };
+    case "SET_CATEGORIES": return { ...state, categories: action.payload };
+    case "ADD_CATEGORY": return { ...state, categories: [...state.categories, action.payload] };
+    case "UPDATE_CATEGORY":
+      return { ...state, categories: state.categories.map((c) => c.id === action.payload.id ? action.payload : c) };
+    case "DELETE_CATEGORY":
+      return { ...state, categories: state.categories.filter((c) => c.id !== action.payload) };
+    case "SET_PRODUCTS": return { ...state, products: action.payload };
+    case "ADD_PRODUCT": return { ...state, products: [...state.products, action.payload] };
+    case "UPDATE_PRODUCT":
+      return { ...state, products: state.products.map((p) => p.id === action.payload.id ? action.payload : p) };
+    case "DELETE_PRODUCT":
+      return { ...state, products: state.products.filter((p) => p.id !== action.payload) };
+    case "SET_AUTHENTICATED": return { ...state, isAuthenticated: action.payload };
+    default: return state;
   }
 }
 
@@ -175,10 +195,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const { isAuthenticated: _, ...persistable } = state;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
-    } catch {
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable)); } catch {}
   }, [state]);
 
   return (

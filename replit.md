@@ -43,17 +43,19 @@ A frontend-only static React + Vite cake shop website. No backend required — a
 ### Routes
 | Path | Description |
 |------|-------------|
-| `/` | Homepage (hero, carousel, gallery, delivered, testimonials, CTA) |
+| `/` | Homepage (hero, Our Specialties, Featured Creations, Delivered With Love, testimonials, CTA) |
 | `/gallery` | Full gallery with filters, search, masonry grid, lightbox |
+| `/products` | Products/Menu page — filterable by category, each card has "Order" button |
 | `/control` | Admin panel (password-protected) |
 | `*` | 404 page |
 
 ### Key Files
 - `src/store/useStore.tsx` — React Context store with localStorage persistence; auto-seeds demo data on first load
-- `src/data/demoData.ts` — 12 demo gallery items + 3 carousel slides (Unsplash images)
+- `src/data/demoData.ts` — 12 demo gallery items + 3 carousel slides + 4 product categories + 8 demo products
 - `src/index.css` — Tailwind v4 `@theme` block with caramel/choco/rose palette + custom animations
 - `src/pages/AdminPage.tsx` — Admin router (internal `currentPage` state, no nested React Router routes)
-- `src/components/admin/` — AdminLogin, AdminLayout, DashboardPage, GalleryManager, CarouselManager, SettingsPage
+- `src/pages/ProductsPage.tsx` — Public products/menu page with category filter tabs
+- `src/components/admin/` — AdminLogin, AdminLayout, DashboardPage, GalleryManager, CarouselManager, SettingsPage, ProductManager
 - `src/components/home/` — HeroSection, CategorySection, FeaturedCarousel, DeliveredSection, TestimonialsSection, CTASection, etc.
 - `src/components/gallery/` — GalleryGrid, GalleryCard, FilterBar, SearchBar, Lightbox
 - `src/components/shared/` — Navbar, Footer, SparkleField, FloatingParticles, AnimatedSection, OrderButton, FloatingOrderButton
@@ -63,9 +65,19 @@ A frontend-only static React + Vite cake shop website. No backend required — a
 - Session key: `cakeauth` in `sessionStorage`
 
 ### Data Model
-- `CakeItem` — `{ id, caption, category, imageUrl, featured?, type? }` (type="delivered" for delivered orders)
+- `CakeItem` — `{ id, caption, category, imageUrl, featured?, type?, review? }` (type="delivered" for delivered orders; review shown on delivered cards)
 - `CarouselSlide` — `{ id, title, subtitle, imageUrl, ctaText? }`
+- `ProductCategory` — `{ id, name, slug, gradient? }` — shown in "Our Specialties" section
+- `Product` — `{ id, name, categoryId, caption, imageUrl }` — shown on /products page; `name` is used as order item label
 - `Settings` — shop name, tagline, hero text, whatsapp/facebook, order channel toggle, social URLs
+
+### Key Feature Notes
+- **Mobile hero**: `flex-col-reverse md:flex-row` — cake at top on mobile, text below; desktop keeps text-left, cake-right
+- **Our Specialties**: reads `state.categories`, cover image from first product in that category; clicking navigates to `/products?cat={slug}`
+- **Delivered With Love**: shows `type === "delivered"` gallery items; `review` field renders as italic quote block
+- **Featured Creations**: only `featured === true` gallery items; nav arrows hidden when `items.length <= visibleCount`
+- **Products & Menu admin tab**: manage categories (name + gradient) and products (image, name, category, caption)
+- **Gallery admin**: `review` field appears when type is "delivered"; category list uses: Chocolate, Vanilla, Custom, Wedding, Birthday, Others
 
 ### Deploy
 - **Vercel**: `vercel.json` at root — SPA rewrite rules

@@ -3,16 +3,18 @@ import { StoreProvider } from "./store/useStore";
 import { ThemeProvider } from "./context/ThemeContext";
 import HomePage from "./pages/HomePage";
 import GalleryPage from "./pages/GalleryPage";
+import ProductsPage from "./pages/ProductsPage";
 import AdminPage from "./pages/AdminPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function Router() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/gallery" element={<GalleryPage />} />
-      <Route path="/control" element={<AdminPage />} />
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="/"         element={<HomePage />} />
+      <Route path="/gallery"  element={<GalleryPage />} />
+      <Route path="/products" element={<ProductsPage />} />
+      <Route path="/control"  element={<AdminPage />} />
+      <Route path="*"         element={<NotFoundPage />} />
     </Routes>
   );
 }
