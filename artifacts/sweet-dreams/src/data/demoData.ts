@@ -28,13 +28,46 @@ export const DEMO_PRODUCT_CATEGORIES: ProductCategory[] = [
   { id: "cat4", name: "Others",        slug: "others",    gradient: "from-stone-900 to-choco-800" },
 ];
 
+/* Product images use a curated set distinct from gallery items above */
 export const DEMO_PRODUCTS: Product[] = [
-  { id: "p1", name: "Triple Chocolate Layer Cake", categoryId: "cat1", caption: "Rich triple chocolate layer cake with ganache drip and fresh berries", imageUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format" },
-  { id: "p2", name: "Dark Chocolate Drip Cake", categoryId: "cat1", caption: "Dark chocolate drip with salted caramel and crunchy praline", imageUrl: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format" },
-  { id: "p3", name: "Classic Vanilla Buttercream", categoryId: "cat2", caption: "Classic vanilla buttercream cake with delicate floral decoration", imageUrl: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&auto=format" },
-  { id: "p4", name: "Dreamy Pink Rose Vanilla", categoryId: "cat2", caption: "Dreamy pink rose vanilla cake, perfect for a princess birthday", imageUrl: "https://images.unsplash.com/photo-1562777717-dc6984f65a63?w=600&auto=format" },
-  { id: "p5", name: "Gold Drip Custom Cake", categoryId: "cat3", caption: "Custom drip cake with gold accents and macarons — your vision, our craft", imageUrl: "https://images.unsplash.com/photo-1519869325930-281384150729?w=600&auto=format" },
-  { id: "p6", name: "Hand-Painted Watercolor", categoryId: "cat3", caption: "Hand-painted watercolor cake — a wearable art piece you can eat", imageUrl: "https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=600&auto=format" },
-  { id: "p7", name: "White Elegance Wedding Cake", categoryId: "cat4", caption: "White elegance wedding cake with gold leaf details for your special day", imageUrl: "https://images.unsplash.com/photo-1616690248468-e4f544a71e5b?w=600&auto=format" },
-  { id: "p8", name: "Loaded Chocolate Fantasy", categoryId: "cat4", caption: "Over-the-top chocolate fantasy loaded with treats for the true chocoholic", imageUrl: "https://images.unsplash.com/photo-1587248720327-8eb72564be1e?w=600&auto=format" },
+  {
+    id: "p1", name: "Red Velvet Cupcake Box", categoryId: "cat1",
+    caption: "Velvety red cupcakes with cream cheese swirls — perfect as a gift box",
+    imageUrl: "https://images.unsplash.com/photo-1614707267537-b85aaf00c4b7?w=600&auto=format",
+  },
+  {
+    id: "p2", name: "Dark Chocolate Drip Cake", categoryId: "cat1",
+    caption: "Dark chocolate drip with salted caramel and crunchy praline topping",
+    imageUrl: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&auto=format",
+  },
+  {
+    id: "p3", name: "Sprinkle Funfetti Cupcakes", categoryId: "cat2",
+    caption: "Cheerful vanilla cupcakes loaded with rainbow sprinkles and pastel frosting",
+    imageUrl: "https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=600&auto=format",
+  },
+  {
+    id: "p4", name: "Classic Vanilla Buttercream", categoryId: "cat2",
+    caption: "Timeless vanilla buttercream cake with delicate floral decoration",
+    imageUrl: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&auto=format",
+  },
+  {
+    id: "p5", name: "Macaron Tower Cake", categoryId: "cat3",
+    caption: "Custom celebration cake crowned with a tower of hand-made French macarons",
+    imageUrl: "https://images.unsplash.com/photo-1553025934-296397db4010?w=600&auto=format",
+  },
+  {
+    id: "p6", name: "Hand-Painted Watercolor Cake", categoryId: "cat3",
+    caption: "Artistic hand-painted watercolor finish — a truly one-of-a-kind edible masterpiece",
+    imageUrl: "https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=600&auto=format",
+  },
+  {
+    id: "p7", name: "Elegant Tiered Wedding Cake", categoryId: "cat4",
+    caption: "Classic multi-tier wedding cake with ivory fondant and gold leaf accents",
+    imageUrl: "https://images.unsplash.com/photo-1547414368-ac947d00b91d?w=600&auto=format",
+  },
+  {
+    id: "p8", name: "Birthday Candle Cake", categoryId: "cat4",
+    caption: "Joyful layered birthday cake with lit candles — makes every moment magical",
+    imageUrl: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&auto=format",
+  },
 ];

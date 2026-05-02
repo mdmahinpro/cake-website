@@ -101,7 +101,7 @@ const defaultState: StoreState = {
 
 const STORAGE_KEY = "sweet_dreams_store";
 const DEMO_KEY = "cake-demo-loaded";
-const PRODUCTS_DEMO_KEY = "cake-products-loaded";
+const PRODUCTS_DEMO_KEY = "cake-products-loaded-v4";
 
 function loadFromStorage(): StoreState {
   try {
@@ -127,8 +127,9 @@ function loadFromStorage(): StoreState {
 
     if (!productsLoaded) {
       localStorage.setItem(PRODUCTS_DEMO_KEY, "true");
+      // Force-replace demo products with fresh images on version bump
       if (categories.length === 0) categories = DEMO_PRODUCT_CATEGORIES;
-      if (products.length === 0) products = DEMO_PRODUCTS;
+      products = DEMO_PRODUCTS;
     }
 
     return {

@@ -116,18 +116,35 @@ export default function AdminLayout({ currentPage, onNavigate, onLogout, childre
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 bg-choco-900/80 backdrop-blur border-b border-caramel-800/30 sticky top-0 z-30">
+        {/* ADMIN MODE banner — always visible so it's unmistakable */}
+        <div className="flex-shrink-0 flex items-center justify-center gap-2 py-1.5 text-xs font-bold tracking-widest uppercase"
+          style={{ background: "linear-gradient(90deg,#7c2d12,#b45309,#7c2d12)", color: "#fef3c7" }}>
+          <MdSettings size={13} />
+          Admin Panel — Private Area
+          <MdSettings size={13} />
+        </div>
+
+        <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 bg-choco-900/90 backdrop-blur border-b border-orange-900/50 sticky top-0 z-30"
+          style={{ boxShadow: "0 1px 0 rgba(180,83,9,0.25)" }}>
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileOpen(true)} className="md:hidden text-caramel-400 hover:text-white transition-colors">
               <MdMenu size={24} />
             </button>
+            <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-amber-300 border border-amber-700/50"
+              style={{ background: "rgba(120,53,15,0.4)" }}>
+              <MdSettings size={13} /> ADMIN
+            </span>
             <h1 className="font-playfair text-lg font-bold text-white">{pageTitle}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/" className="hidden sm:flex items-center gap-1 text-sm text-caramel-400 hover:text-caramel-300 transition-colors">
-              <MdOpenInNew size={16} /> View Site
+            <Link to="/" target="_blank" className="flex items-center gap-1 text-sm text-amber-400/80 hover:text-amber-300 transition-colors">
+              <MdOpenInNew size={15} />
+              <span className="hidden sm:inline">View Public Site</span>
             </Link>
-            <div className="w-9 h-9 rounded-full bg-caramel-400/20 border border-caramel-400/30 flex items-center justify-center text-lg">🍰</div>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-base font-bold border border-amber-700/50 text-amber-300"
+              style={{ background: "rgba(120,53,15,0.5)" }}>
+              A
+            </div>
           </div>
         </header>
 
