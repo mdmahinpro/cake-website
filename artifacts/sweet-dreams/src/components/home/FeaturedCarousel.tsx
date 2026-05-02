@@ -4,6 +4,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import AnimatedSection from "../shared/AnimatedSection";
 import OrderButton from "../shared/OrderButton";
 import { useStore } from "../../store/useStore";
+import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 
 function useVisibleCount() {
   const [count, setCount] = useState(1);
@@ -23,6 +24,8 @@ function useVisibleCount() {
 export default function FeaturedCarousel() {
   const { state } = useStore();
   const { gallery } = state;
+  const { siteTheme } = useTheme();
+  const tokens = THEME_TOKENS[siteTheme];
 
   const items =
     gallery.filter((g) => g.featured).length > 0
@@ -50,9 +53,7 @@ export default function FeaturedCarousel() {
   useEffect(() => {
     if (paused || items.length <= visibleCount) return;
     timerRef.current = setInterval(goNext, 4000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [paused, goNext, items.length, visibleCount]);
 
   const visible = items.slice(index, index + visibleCount);
@@ -65,14 +66,15 @@ export default function FeaturedCarousel() {
 
   if (items.length === 0) return null;
 
+  const navBg = siteTheme === "navy" ? "#031525" : "#1e0904";
+  const sectionBg = siteTheme === "navy" ? "rgba(3,21,37,0.7)" : "rgba(18,6,2,0.7)";
+  const cardBg = siteTheme === "navy" ? "#031525" : "#1e0904";
+
   const navBtn =
     "absolute top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-choco-900 transition-all duration-200 shadow-lg";
 
   return (
-    <section
-      className="py-20 overflow-hidden"
-      style={{ background: "rgba(3,21,37,0.7)" }}
-    >
+    <section className="py-20 overflow-hidden transition-colors duration-700" style={{ background: sectionBg }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center mb-12">
           <p className="section-subtitle mb-2">Our Most Loved Cakes</p>
@@ -85,12 +87,12 @@ export default function FeaturedCarousel() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {/* PREV button — left side */}
+          {/* PREV */}
           {items.length > visibleCount && (
             <motion.button
               onClick={goPrev}
               className={`${navBtn} left-0 -translate-x-1/2`}
-              style={{ background: "#031525" }}
+              style={{ background: navBg }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Previous"
@@ -99,7 +101,6 @@ export default function FeaturedCarousel() {
             </motion.button>
           )}
 
-          {/* Carousel viewport — padded to clear nav buttons */}
           <div className="overflow-hidden px-8 sm:px-10">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
@@ -117,8 +118,14 @@ export default function FeaturedCarousel() {
                   <motion.div
                     key={item.id}
                     className="rounded-3xl overflow-hidden"
-                    style={{ background: "#031525", border: "1px solid rgba(0,190,255,0.15)" }}
-                    whileHover={{ y: -8, boxShadow: "0 24px 48px rgba(0,0,0,0.5), 0 0 30px rgba(0,190,255,0.12)" }}
+                    style={{
+                      background: cardBg,
+                      border: `1px solid rgba(${tokens.accentRgb},0.15)`,
+                    }}
+                    whileHover={{
+                      y: -8,
+                      boxShadow: `0 24px 48px rgba(0,0,0,0.5), 0 0 30px rgba(${tokens.accentRgb},0.12)`,
+                    }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 280, damping: 22 }}
                   >
@@ -139,7 +146,7 @@ export default function FeaturedCarousel() {
                         <p className="text-sm text-caramel-100 line-clamp-2 flex-1">{item.caption}</p>
                         <span
                           className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-choco-900"
-                          style={{ background: "#00beff" }}
+                          style={{ background: tokens.accentHex }}
                         >
                           {item.category}
                         </span>
@@ -152,12 +159,12 @@ export default function FeaturedCarousel() {
             </AnimatePresence>
           </div>
 
-          {/* NEXT button — right side */}
+          {/* NEXT */}
           {items.length > visibleCount && (
             <motion.button
               onClick={goNext}
               className={`${navBtn} right-0 translate-x-1/2`}
-              style={{ background: "#031525" }}
+              style={{ background: navBg }}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Next"
@@ -166,24 +173,19 @@ export default function FeaturedCarousel() {
             </motion.button>
           )}
 
-          {/* Dot indicators */}
+          {/* Dots */}
           {items.length > visibleCount && (
             <div className="flex justify-center gap-1 mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => {
-                    setDirection(i > index ? 1 : -1);
-                    setIndex(i);
-                  }}
+                  onClick={() => { setDirection(i > index ? 1 : -1); setIndex(i); }}
                   className="p-2 flex items-center justify-center"
                   aria-label={`Slide ${i + 1}`}
                 >
                   <span
                     className={`block rounded-full transition-all duration-200 ${
-                      i === index
-                        ? "w-6 h-2.5 bg-caramel-400"
-                        : "w-2.5 h-2.5 border border-caramel-400"
+                      i === index ? "w-6 h-2.5 bg-caramel-400" : "w-2.5 h-2.5 border border-caramel-400"
                     }`}
                   />
                 </button>

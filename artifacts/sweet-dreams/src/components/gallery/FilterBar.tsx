@@ -1,4 +1,5 @@
 import { useStore } from "../../store/useStore";
+import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 
 const CATEGORIES = [
   { slug: "all",         label: "All" },
@@ -10,7 +11,6 @@ const CATEGORIES = [
   { slug: "custom",      label: "Customize" },
 ];
 
-/** Checks whether a gallery item matches a filter slug */
 export function matchesFilter(
   item: { category: string; type?: string },
   slug: string
@@ -27,6 +27,8 @@ interface FilterBarProps {
 export default function FilterBar({ activeFilter, onFilterChange }: FilterBarProps) {
   const { state } = useStore();
   const { gallery } = state;
+  const { siteTheme } = useTheme();
+  const tokens = THEME_TOKENS[siteTheme];
 
   function countForSlug(slug: string) {
     if (slug === "all") return gallery.length;
@@ -34,7 +36,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
   }
 
   return (
-    <div className="sticky top-[64px] z-40 bg-choco-900/90 backdrop-blur-xl border-b border-caramel-800/30 py-3 px-4">
+    <div className="sticky top-[64px] z-40 bg-choco-900/90 backdrop-blur-xl border-b border-caramel-800/30 py-3 px-4 transition-colors duration-700">
       <div className="max-w-7xl mx-auto">
         <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 flex-nowrap">
           {CATEGORIES.map((cat) => {
@@ -49,7 +51,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
                     ? "bg-caramel-400 text-choco-900 shadow-lg font-semibold"
                     : "border border-caramel-700/50 text-caramel-300 hover:border-caramel-400 hover:text-white"
                 }`}
-                style={isActive ? { boxShadow: "0 4px 18px rgba(0,190,255,0.35)" } : {}}
+                style={isActive ? { boxShadow: `0 4px 18px rgba(${tokens.accentRgb},0.35)` } : {}}
               >
                 {cat.label}
                 <span className={`rounded-full px-1.5 text-[10px] font-bold ${isActive ? "bg-choco-900/20 text-choco-900" : "bg-white/10 text-caramel-300"}`}>
