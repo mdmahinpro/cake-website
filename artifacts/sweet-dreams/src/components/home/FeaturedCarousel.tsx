@@ -66,7 +66,7 @@ export default function FeaturedCarousel() {
   if (items.length === 0) return null;
 
   const navBtn =
-    "absolute top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-white transition-all duration-200";
+    "absolute top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-choco-900 transition-all duration-200 shadow-lg";
 
   return (
     <section
@@ -85,18 +85,22 @@ export default function FeaturedCarousel() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
+          {/* PREV button — left side */}
           {items.length > visibleCount && (
             <motion.button
               onClick={goPrev}
-              className={`${navBtn} -translate-x-2`}
+              className={`${navBtn} left-0 -translate-x-1/2`}
               style={{ background: "#031525" }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              aria-label="Previous"
             >
               <FaChevronLeft size={16} />
             </motion.button>
           )}
 
-          <div className="overflow-hidden">
+          {/* Carousel viewport — padded to clear nav buttons */}
+          <div className="overflow-hidden px-8 sm:px-10">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={index}
@@ -127,7 +131,7 @@ export default function FeaturedCarousel() {
                       />
                     ) : (
                       <div className="w-full aspect-square bg-gradient-to-br from-choco-700 to-choco-900 flex items-center justify-center">
-                        <span className="text-caramel-400/40 text-6xl font-playfair">?</span>
+                        <span className="text-caramel-400/40 text-5xl font-playfair font-bold">SD</span>
                       </div>
                     )}
                     <div className="p-4 flex flex-col gap-3">
@@ -148,17 +152,21 @@ export default function FeaturedCarousel() {
             </AnimatePresence>
           </div>
 
+          {/* NEXT button — right side */}
           {items.length > visibleCount && (
             <motion.button
               onClick={goNext}
-              className={`${navBtn} translate-x-2`}
+              className={`${navBtn} right-0 translate-x-1/2`}
               style={{ background: "#031525" }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              aria-label="Next"
             >
               <FaChevronRight size={16} />
             </motion.button>
           )}
 
+          {/* Dot indicators */}
           {items.length > visibleCount && (
             <div className="flex justify-center gap-1 mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (

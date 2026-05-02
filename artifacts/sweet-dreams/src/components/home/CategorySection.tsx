@@ -120,16 +120,21 @@ export default function CategorySection() {
                     </p>
                   </div>
 
-                  {/* Explore button */}
+                  {/* Explore button — centered on hover */}
                   <motion.div
-                    className="absolute bottom-0 left-0 right-0 px-3 pb-3"
-                    initial={{ y: 60, opacity: 0 }}
-                    variants={{ hovered: { y: 0, opacity: 1 } }}
-                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    variants={{ hovered: { opacity: 1 } }}
+                    transition={{ duration: 0.25 }}
                   >
-                    <button className="btn-primary w-full text-sm py-2">
+                    <motion.button
+                      className="btn-primary px-7 py-2.5 text-sm font-semibold shadow-xl"
+                      initial={{ scale: 0.85 }}
+                      variants={{ hovered: { scale: 1 } }}
+                      transition={{ type: "spring", stiffness: 340, damping: 22 }}
+                    >
                       Explore
-                    </button>
+                    </motion.button>
                   </motion.div>
                 </motion.div>
               </AnimatedSection>
