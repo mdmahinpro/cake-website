@@ -1,0 +1,140 @@
+Build the complete admin panel at src/pages/AdminPage.jsx.
+
+ADMIN LOGIN src/components/admin/AdminLogin.jsx:
+Shown when not authenticated (no 'cakeauth' in sessionStorage). Full screen, same dark bg as site. SparkleField background. Centered card: card-glass, max-w-sm, mx-auto, mt-20, p-8.
+- 🔒 icon text-5xl, text-caramel-400, animate-bounce-slow
+- "Admin Panel" Playfair Display, text-3xl, font-bold
+- "Sweet Dreams Cakes" Dancing Script, text-caramel-300
+Password input: input-dark, show/hide toggle button inside right (Eye/EyeOff icon from react-icons).
+- On submit: compare with import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
+- If correct: sessionStorage.setItem('cakeauth','true'), re-render AdminPage
+- If wrong: framer-motion shake animation on card (keyframes: x: [0,-15,15,-15,15,-8,8,-4,4,0]), red border flash on input, "Incorrect password" error text.
+Logout: clears sessionStorage, reloads.
+
+ADMIN LAYOUT AdminLayout.jsx:
+- Fixed left sidebar 260px on desktop, w-0 on mobile (slide-in drawer)
+- Top header bar
+- Main scrollable content area
+- Sidebar uses framer-motion for mobile open/close
+
+SIDEBAR: bg-choco-900 border-r border-caramel-800/30, h-screen overflow-y-auto.
+Top: Logo + "Admin Panel" + "View Site" small link.
+Nav links with icons from react-icons:
+- Dashboard (MdDashboard)
+- Gallery Manager (MdPhoto)
+- Carousel Slides (MdViewCarousel)
+- Delivered Orders (MdCheckCircle)
+- Settings (MdSettings)
+Active link: bg-caramel-400/20 border-r-2 border-caramel-400 text-caramel-300.
+Inactive: text-choco-300 hover:text-caramel-300 hover:bg-white/5.
+Bottom: logout button, red text, hover:bg-red-900/20.
+
+TOP HEADER: h-16 bg-choco-900/80 backdrop-blur border-b border-caramel-800/30.
+Left: hamburger (mobile) + page title.
+Right: "View Site" link, admin avatar (🍰 emoji in circle).
+
+---
+DASHBOARD PAGE
+---
+Stats row (2x2 mobile, 4 cols desktop). StatsCard component:
+- card-dark p-5 rounded-2xl
+- Big number: text-3xl font-bold text-caramel-400
+- Label: text-sm text-choco-300
+- Icon: top-right, text-2xl
+Cards: Total Gallery Items, Carousel Slides, Delivered Orders, Last Updated.
+Quick action buttons row: "Add Gallery Item", "Add Carousel Slide", "Settings". Each btn-primary or btn-outline.
+Recent items (last 5 added): small list with thumbnail, caption, date added, edit/delete icons.
+
+---
+GALLERY MANAGER
+---
+TWO SECTIONS stacked:
+
+SECTION A - ADD/EDIT FORM (card-dark p-6 rounded-3xl):
+Title: "Add New Cake" OR "Edit Cake" (changes when editing).
+Form fields:
+1. IMAGE SOURCE tabs (Upload File | Image URL):
+   Upload tab: Drag+drop zone (dashed border, rounded-2xl, text-caramel-400, "Drag image here or click to browse"). onChange: FileReader.readAsDataURL -> store base64. Size warning if > 1.5MB.
+   URL tab: input-dark, placeholder https://... Test button loads image to preview.
+2. LIVE PREVIEW (right side on desktop, below on mobile): Shows image + caption as it will appear on site. Mini card with all details.
+3. Caption: textarea input-dark, rows=3, 200 char limit with counter.
+4. Category: select input-dark. Options: Chocolate, Vanilla, Overloaded Chocolate, Custom, Wedding, Birthday, Other.
+5. Type: radio buttons styled as pill toggles. Gallery Work | Delivered Order.
+6. Featured toggle: Custom CSS toggle (w-12 h-6 rounded-full). OFF: bg-choco-700. ON: bg-caramel-400. Knob: w-5 h-5 rounded-full bg-white, translates on toggle. Label: "Show in Homepage Carousel".
+7. YouTube Link: optional input-dark, placeholder https://youtube.com/watch?v=... Below: "Paste YouTube video URL to show Watch Video button".
+8. Submit button: "Add to Gallery" (adding mode) | "Update Item" (edit mode). btn-primary full width. framer-motion success animation on save (checkmark scale-in).
+
+SECTION B - EXISTING ITEMS GRID:
+Filter row: All | Gallery | Delivered pill tabs. Search input real-time. Count "Showing X items".
+Grid: grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.
+Each admin item card:
+- rounded-2xl overflow-hidden relative
+- Image: aspect-square object-cover
+- Bottom bar: bg-choco-800 p-2 flex justify-between items-center. Caption truncated text-xs. Action buttons: Edit (pencil icon, text-caramel-400), Delete (trash icon, text-red-400).
+- Top-right overlay: category badge
+- If featured: gold star badge top-left
+- If has YouTube: red video badge
+Delete confirmation dialog (framer-motion modal): "Are you sure you want to delete this cake?" Cancel + Delete (red) buttons.
+Edit: populates form above, scrolls to form.
+
+---
+CAROUSEL MANAGER
+---
+Same structure as Gallery Manager but for carousel slides.
+Add form fields:
+- Image (same upload/URL tabs)
+- Title (text input)
+- Subtitle (text input)
+- Caption (textarea)
+- YouTube Link (optional)
+- Is Active toggle
+- Sort Order (number)
+Slides list as sortable cards: each has thumbnail, title, active badge, edit/delete.
+Drag to reorder: use mousedown/touchstart with index swapping for reorder.
+MINI PREVIEW: A small carousel preview showing current slides, updates live as admin edits.
+
+---
+DELIVERED ORDERS
+---
+Same as Gallery Manager filtered to type=delivered.
+Shows note: "These appear in 'Delivered With Love' section on homepage (max 6 shown)".
+
+---
+SETTINGS PAGE
+---
+All in one scroll page, grouped in cards.
+
+CARD 1 - Shop Info (card-dark p-6 rounded-3xl):
+- Shop Name input
+- Tagline input
+- Hero Title input
+- Hero Subtitle input
+
+CARD 2 - ORDER CHANNEL (card-dark p-6 rounded-3xl):
+Title: "How Customers Place Orders"
+WhatsApp Number input: input-dark, placeholder 8801700000000. Helper text: "Include country code without +. Bangladesh: 880 then number".
+Facebook Page URL input: input-dark, placeholder https://facebook.com/yourpage.
+
+BIG TOGGLE SWITCH (the star feature):
+Container: flex items-center justify-center gap-4 my-6 p-4 rounded-2xl bg-choco-900/60.
+Left label: "Facebook Message" - text-blue-400 when active, text-choco-400 when inactive, font-semibold text-lg.
+TOGGLE: w-20 h-10 rounded-full cursor-pointer transition-all duration-500.
+- OFF (Facebook): bg-blue-600 shadow-lg shadow-blue-900/50
+- ON (WhatsApp): bg-green-500 shadow-lg shadow-green-900/50
+- Knob: w-8 h-8 rounded-full bg-white shadow-md, translate-x-1 when OFF (Facebook), translate-x-11 when ON (WhatsApp). framer-motion spring transition on knob movement.
+Right label: "WhatsApp" - text-green-400 when active, text-choco-400 when inactive, font-semibold text-lg.
+Below toggle: Active channel preview box:
+- Facebook active: blue card "Customers will message your Facebook page"
+- WhatsApp active: green card "Customers will WhatsApp your number"
+framer-motion AnimatePresence for smooth swap between the two.
+
+CARD 3 - Social Media: Instagram URL, YouTube Channel URL inputs.
+CARD 4 - Admin Security: Current password, new password, confirm new password. "Update Password" btn-primary. Validates new matches confirm, min 6 chars.
+CARD 5 - Data Management: Export JSON button, Import JSON file input, "Clear All" button (double confirm).
+
+STICKY SAVE BUTTON:
+Fixed bottom-0 left-0 right-0 OR bottom-6 right-6.
+"Save All Settings" btn-primary.
+On click: saves all to localStorage via useStore dispatch.
+framer-motion shows "Saved! ✓" text for 2 seconds.
+On desktop shows only in settings page, right-aligned.
