@@ -5,6 +5,7 @@ import SparkleField from "../shared/SparkleField";
 import FloatingParticles from "../shared/FloatingParticles";
 import AnimatedCake, { type CakeTheme } from "./AnimatedCake";
 import { useStore } from "../../store/useStore";
+import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 import { openOrderChannel } from "../../utils/order";
 
 const fadeUp = (delay = 0) => ({
@@ -35,14 +36,17 @@ const FLAVORS: { id: CakeTheme; label: string; note: string; swatch: string }[] 
 ];
 
 const BADGES = [
-  { label: "Custom Design",      pos: "top-2 -right-4 md:top-4 md:-right-10" },
-  { label: "Fresh Baked",        pos: "-bottom-2 -left-4 md:-left-10" },
-  { label: "Love In Every Slice",pos: "bottom-14 -right-6 md:bottom-20 md:-right-12" },
+  { label: "Custom Design",       pos: "top-2 -right-4 md:top-4 md:-right-10" },
+  { label: "Fresh Baked",         pos: "-bottom-2 -left-4 md:-left-10" },
+  { label: "Love In Every Slice", pos: "bottom-14 -right-6 md:bottom-20 md:-right-12" },
 ];
 
 export default function HeroSection() {
   const { state } = useStore();
   const { settings } = state;
+  const { siteTheme } = useTheme();
+  const tokens = THEME_TOKENS[siteTheme];
+
   const [scrolled, setScrolled] = useState(false);
   const [cakeTheme, setCakeTheme] = useState<CakeTheme>("vanilla");
 
@@ -62,15 +66,18 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background layers */}
-      <div className="absolute inset-0 bg-gradient-to-br from-choco-900 via-[#020e20] to-choco-800" />
       <div
-        className="absolute inset-0"
-        style={{ background: "radial-gradient(ellipse at 70% 50%, rgba(0,190,255,0.12) 0%, transparent 65%)" }}
+        className="absolute inset-0 transition-colors duration-700"
+        style={{ background: `linear-gradient(135deg, ${tokens.bgDeep} 0%, ${tokens.bgMid}55 50%, ${tokens.bgDeep} 100%)` }}
       />
       <div
-        className="absolute inset-0 opacity-[0.025]"
+        className="absolute inset-0 transition-all duration-700"
+        style={{ background: `radial-gradient(ellipse at 70% 50%, ${tokens.radialGlow} 0%, transparent 65%)` }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.025] transition-all duration-700"
         style={{
-          backgroundImage: "linear-gradient(rgba(0,190,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,190,255,1) 1px, transparent 1px)",
+          backgroundImage: `linear-gradient(${tokens.gridLine} 1px, transparent 1px), linear-gradient(90deg, ${tokens.gridLine} 1px, transparent 1px)`,
           backgroundSize: "60px 60px",
         }}
       />
@@ -122,7 +129,7 @@ export default function HeroSection() {
               {["Fresh Daily", "Custom Design", "Free Delivery"].map((badge) => (
                 <span key={badge}
                   className="px-3 py-1.5 rounded-full text-xs text-caramel-300 border border-caramel-600/40"
-                  style={{ background: "rgba(1,21,37,0.8)" }}>
+                  style={{ background: `${tokens.bgDeep}cc` }}>
                   {badge}
                 </span>
               ))}
@@ -136,7 +143,7 @@ export default function HeroSection() {
             <div className="relative w-52 h-52 sm:w-72 sm:h-72 md:w-96 md:h-96 flex-shrink-0">
               <div
                 className="absolute inset-0 rounded-full blur-3xl animate-glow"
-                style={{ background: "rgba(0,190,255,0.12)" }}
+                style={{ background: tokens.radialGlow }}
               />
               <motion.div
                 initial={{ opacity: 0, scale: 0.85 }}
@@ -153,25 +160,23 @@ export default function HeroSection() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 2.8 + i * 0.15, type: "spring" }}
                   className={`absolute animate-float-slow px-3 py-1.5 rounded-full text-[10px] md:text-xs text-caramel-200 border border-caramel-400/40 whitespace-nowrap ${b.pos}`}
-                  style={{ background: "rgba(3,21,37,0.9)", animationDelay: `${i * 0.9}s` }}>
+                  style={{ background: `${tokens.bgDeep}e6`, animationDelay: `${i * 0.9}s` }}>
                   {b.label}
                 </motion.div>
               ))}
             </div>
 
-            {/* ── Flavor picker ── */}
+            {/* ── Cake flavor picker ── */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.0, duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
               className="flex flex-col items-center gap-3"
             >
-              {/* Label */}
               <p className="text-[10px] tracking-[0.2em] uppercase font-poppins text-caramel-400/55 select-none">
                 Choose a flavor
               </p>
 
-              {/* Pill buttons */}
               <div className="flex gap-2">
                 {FLAVORS.map((fl) => {
                   const active = cakeTheme === fl.id;
@@ -184,18 +189,17 @@ export default function HeroSection() {
                       className="relative flex items-center gap-2.5 px-4 py-2.5 rounded-full font-poppins text-xs font-semibold transition-colors duration-300 select-none focus:outline-none"
                       style={{
                         background: active
-                          ? "rgba(0,190,255,0.13)"
+                          ? `rgba(${tokens.accentRgb},0.13)`
                           : "rgba(255,255,255,0.04)",
                         border: active
-                          ? "1px solid rgba(0,190,255,0.55)"
+                          ? `1px solid rgba(${tokens.accentRgb},0.55)`
                           : "1px solid rgba(255,255,255,0.1)",
                         boxShadow: active
-                          ? "0 0 18px rgba(0,190,255,0.22), inset 0 0 8px rgba(0,190,255,0.06)"
+                          ? `0 0 18px rgba(${tokens.accentRgb},0.22), inset 0 0 8px rgba(${tokens.accentRgb},0.06)`
                           : "none",
                         color: active ? "#e8f8ff" : "rgba(180,210,230,0.6)",
                       }}
                     >
-                      {/* Colour swatch sphere */}
                       <span
                         className="w-4 h-4 rounded-full ring-1 ring-white/20 flex-shrink-0"
                         style={{ background: fl.swatch }}
@@ -204,12 +208,14 @@ export default function HeroSection() {
                         <span>{fl.label}</span>
                         <span className="text-[9px] opacity-60 font-normal">{fl.note}</span>
                       </span>
-                      {/* Active indicator dot */}
                       {active && (
                         <motion.span
                           layoutId="activeDot"
-                          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-caramel-400"
-                          style={{ boxShadow: "0 0 6px rgba(0,190,255,0.8)" }}
+                          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full"
+                          style={{
+                            background: tokens.accentHex,
+                            boxShadow: `0 0 6px rgba(${tokens.accentRgb},0.8)`,
+                          }}
                         />
                       )}
                     </motion.button>
@@ -217,8 +223,8 @@ export default function HeroSection() {
                 })}
               </div>
             </motion.div>
-          </div>
 
+          </div>
         </div>
       </div>
 

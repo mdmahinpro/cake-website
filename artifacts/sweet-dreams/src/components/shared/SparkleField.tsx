@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 
 interface Sparkle {
   id: number;
@@ -13,13 +14,15 @@ interface Sparkle {
 }
 
 const CHARS = ["✦", "✧", "★", "◆"];
-const COLORS = ["#00beff", "#4dd9ff", "#80e0ff", "#b3efff", "#e0f8ff", "#f4a7b9"];
 
 function rand(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
 export default function SparkleField() {
+  const { siteTheme } = useTheme();
+  const colors = THEME_TOKENS[siteTheme].sparkles;
+
   const sparkles = useMemo<Sparkle[]>(() => {
     return Array.from({ length: 28 }, (_, i) => ({
       id: i,
@@ -30,9 +33,9 @@ export default function SparkleField() {
       opacity: rand(0.06, 0.32),
       delay: `${rand(0, 4)}s`,
       duration: `${rand(2, 5)}s`,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      color: colors[Math.floor(Math.random() * colors.length)],
     }));
-  }, []);
+  }, [siteTheme]); // re-generate in correct palette on every theme switch
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">

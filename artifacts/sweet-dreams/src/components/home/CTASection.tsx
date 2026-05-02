@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { FaWhatsapp, FaFacebook } from "react-icons/fa";
 import SparkleField from "../shared/SparkleField";
 import { useStore } from "../../store/useStore";
+import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 import { buildWhatsAppUrl, buildFacebookUrl } from "../../utils/order";
 
 const fadeUp = (delay = 0) => ({
@@ -13,26 +14,25 @@ const fadeUp = (delay = 0) => ({
 export default function CTASection() {
   const { state } = useStore();
   const { settings } = state;
+  const { siteTheme } = useTheme();
+  const tokens = THEME_TOKENS[siteTheme];
 
   const whatsappUrl = buildWhatsAppUrl(settings.whatsappNumber, "General inquiry", "Custom");
   const facebookUrl = buildFacebookUrl(settings.facebookPageUrl, "General inquiry");
 
   return (
     <section
-      className="relative py-24 overflow-hidden"
+      className="relative py-24 overflow-hidden transition-colors duration-700"
       style={{
-        backgroundImage:
-          "linear-gradient(135deg, #010d1e 0%, #051e36 40%, #010d1e 100%)",
+        backgroundImage: tokens.ctaBg,
         backgroundSize: "300% 300%",
         animation: "gradientShift 6s ease infinite",
       }}
     >
-      {/* Aqua radial glow */}
+      {/* Radial glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse at center, rgba(0,190,255,0.08) 0%, transparent 70%)",
-        }}
+        className="absolute inset-0 pointer-events-none transition-all duration-700"
+        style={{ background: tokens.ctaGlow }}
       />
       <SparkleField />
 

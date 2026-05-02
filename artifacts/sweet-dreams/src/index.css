@@ -123,6 +123,81 @@
   * { box-sizing: border-box; max-width: 100%; -webkit-tap-highlight-color: transparent; }
 }
 
+/* ════════════════════════════════════════════════════════
+   CHOCOLATE SITE THEME  (activated by html[data-theme="chocolate"])
+   Overrides all Tailwind CSS variables so every bg-choco-* /
+   text-caramel-* / border-caramel-* utility updates automatically.
+   ════════════════════════════════════════════════════════ */
+
+@keyframes glow-choco {
+  0%, 100% { box-shadow: 0 0 20px rgba(212,160,60,0.25); }
+  50%       { box-shadow: 0 0 60px rgba(212,160,60,0.6); }
+}
+
+html[data-theme="chocolate"] {
+  /* Background palette — deep chocolate browns */
+  --color-choco-900: #120602;
+  --color-choco-800: #1e0904;
+  --color-choco-700: #2a1006;
+  --color-choco-600: #3d1a08;
+  --color-choco-500: #5a2810;
+  --color-choco-400: #7a3818;
+  --color-choco-300: #a05030;
+  --color-choco-200: #c87040;
+  --color-choco-100: #e09060;
+  --color-choco-50:  #f4d8c0;
+
+  /* Accent palette — warm gold replaces electric aqua */
+  --color-caramel-50:  #fdf4d8;
+  --color-caramel-100: #f8e8b0;
+  --color-caramel-200: #f0d080;
+  --color-caramel-300: #e8c060;
+  --color-caramel-400: #d4a03c;
+  --color-caramel-500: #c08828;
+  --color-caramel-600: #a87020;
+  --color-caramel-700: #8a5818;
+  --color-caramel-800: #6a4010;
+  --color-caramel-900: #4a2808;
+}
+
+html[data-theme="chocolate"] body {
+  background-color: #120602;
+  color: #faf0e0;
+}
+html[data-theme="chocolate"] ::-webkit-scrollbar-track { background: #120602; }
+html[data-theme="chocolate"] ::-webkit-scrollbar-thumb { background: #d4a03c; border-radius: 3px; }
+html[data-theme="chocolate"] ::selection { background: rgba(212,160,60,0.3); color: #faf0e0; }
+
+html[data-theme="chocolate"] .btn-primary {
+  box-shadow: 0 10px 25px rgba(212,160,60,0.3);
+}
+html[data-theme="chocolate"] .card-glass {
+  border-color: rgba(212,160,60,0.15);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,160,60,0.08);
+}
+html[data-theme="chocolate"] .card-dark {
+  border-color: rgba(212,160,60,0.2);
+}
+html[data-theme="chocolate"] .text-gradient {
+  background-image: linear-gradient(to right, #d4a03c, #f0d080, #e8c060);
+}
+html[data-theme="chocolate"] .input-dark {
+  background: rgba(18,6,2,0.85);
+  border-color: rgba(212,160,60,0.25);
+  color: #faf0e0;
+}
+html[data-theme="chocolate"] .input-dark::placeholder {
+  color: #e8c060;
+  opacity: 0.55;
+}
+html[data-theme="chocolate"] .input-dark:focus {
+  border-color: #d4a03c;
+  box-shadow: 0 0 0 1px #d4a03c;
+}
+html[data-theme="chocolate"] .animate-glow {
+  animation-name: glow-choco;
+}
+
 @layer components {
   .btn-primary {
     @apply bg-gradient-to-r from-caramel-500 to-caramel-400 text-white font-semibold px-6 py-3 rounded-full

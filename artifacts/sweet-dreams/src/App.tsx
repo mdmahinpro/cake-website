@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StoreProvider } from "./store/useStore";
+import { ThemeProvider } from "./context/ThemeContext";
 import HomePage from "./pages/HomePage";
 import GalleryPage from "./pages/GalleryPage";
 import AdminPage from "./pages/AdminPage";
@@ -18,10 +19,12 @@ function Router() {
 
 export default function App() {
   return (
-    <StoreProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <Router />
-      </BrowserRouter>
-    </StoreProvider>
+    <ThemeProvider>
+      <StoreProvider>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <Router />
+        </BrowserRouter>
+      </StoreProvider>
+    </ThemeProvider>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaWhatsapp, FaFacebook } from "react-icons/fa";
 import { useStore } from "../../store/useStore";
+import { useTheme } from "../../context/ThemeContext";
 import { openOrderChannel } from "../../utils/order";
 
 const NAV_LINKS = [
@@ -13,30 +14,64 @@ const NAV_LINKS = [
 function CakeLogo() {
   return (
     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-      {/* Layer 3 (top) */}
       <rect x="11" y="4"  width="8"  height="7"  rx="2"   fill="#00beff"   opacity="0.9" />
-      {/* Layer 2 */}
       <rect x="7"  y="10" width="16" height="8"  rx="2.5" fill="#00a2dc"   />
-      {/* Layer 1 (bottom) */}
       <rect x="3"  y="17" width="24" height="10" rx="3"   fill="#0088bb"   />
-      {/* Frosting stripe L3-L2 */}
       <rect x="7"  y="9"  width="16" height="2"  rx="1"   fill="white" opacity="0.7" />
-      {/* Frosting stripe L2-L1 */}
       <rect x="3"  y="16" width="24" height="2"  rx="1"   fill="white" opacity="0.7" />
-      {/* Candle 1 */}
       <rect x="12" y="0"  width="3"  height="5"  rx="1.5" fill="#ff6b9d"  />
-      {/* Candle 2 */}
       <rect x="18" y="1"  width="3"  height="4"  rx="1.5" fill="#ffd93d"  />
-      {/* Flames */}
       <ellipse cx="13.5" cy="0"  rx="2" ry="2.5" fill="#ffb300" opacity="0.9" />
       <ellipse cx="19.5" cy="1"  rx="2" ry="2.5" fill="#ffb300" opacity="0.9" />
     </svg>
   );
 }
 
+/* ── Compact two-dot theme toggle ── */
+function ThemeToggle() {
+  const { siteTheme, toggleTheme } = useTheme();
+  const isNavy = siteTheme === "navy";
+
+  return (
+    <motion.button
+      onClick={toggleTheme}
+      whileTap={{ scale: 0.88 }}
+      title={isNavy ? "Switch to Chocolate theme" : "Switch to Navy theme"}
+      aria-label="Toggle site theme"
+      className="relative flex items-center gap-1.5 h-7 px-2.5 rounded-full transition-all duration-300 select-none focus:outline-none"
+      style={{
+        background: isNavy
+          ? "rgba(0,190,255,0.08)"
+          : "rgba(212,160,60,0.1)",
+        border: isNavy
+          ? "1px solid rgba(0,190,255,0.25)"
+          : "1px solid rgba(212,160,60,0.3)",
+      }}
+    >
+      {/* Aqua dot — navy theme */}
+      <motion.span
+        animate={{ scale: isNavy ? 1.25 : 1, opacity: isNavy ? 1 : 0.28 }}
+        transition={{ duration: 0.25 }}
+        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+        style={{ background: "#00beff" }}
+      />
+      {/* Divider */}
+      <span className="w-px h-3 bg-white/10 flex-shrink-0" />
+      {/* Gold dot — chocolate theme */}
+      <motion.span
+        animate={{ scale: !isNavy ? 1.25 : 1, opacity: !isNavy ? 1 : 0.28 }}
+        transition={{ duration: 0.25 }}
+        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+        style={{ background: "#d4a03c" }}
+      />
+    </motion.button>
+  );
+}
+
 export default function Navbar() {
   const { state } = useStore();
   const { settings } = state;
+  const { siteTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -84,6 +119,9 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            {/* Theme toggle — visible on all sizes */}
+            <ThemeToggle />
+
             <button
               onClick={handleOrder}
               className="hidden md:flex items-center gap-2 btn-primary px-4 py-2 text-sm"
@@ -116,7 +154,14 @@ export default function Navbar() {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="flex justify-end p-6">
+            <div className="flex justify-between items-center p-6">
+              {/* Theme toggle in mobile menu */}
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <span className="text-xs font-poppins text-caramel-400/60">
+                  {siteTheme === "navy" ? "Navy" : "Chocolate"}
+                </span>
+              </div>
               <button
                 onClick={() => setMenuOpen(false)}
                 className="text-caramel-400 hover:text-caramel-200 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
