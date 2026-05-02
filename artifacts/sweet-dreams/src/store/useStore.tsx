@@ -6,6 +6,7 @@ export interface CakeItem {
   category: string;
   imageUrl: string;
   featured?: boolean;
+  type?: string;
 }
 
 export interface CarouselSlide {

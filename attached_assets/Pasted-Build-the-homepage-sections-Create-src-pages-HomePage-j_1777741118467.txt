@@ -1,0 +1,151 @@
+Build the homepage sections. Create src/pages/HomePage.jsx and these section components.
+
+src/pages/HomePage.jsx
+Import and render all sections in order:
+1. HeroSection
+2. CategorySection
+3. FeaturedCarousel
+4. DeliveredSection
+5. HowToOrderSection
+6. YouTubeSection (conditional)
+7. TestimonialsSection
+8. CTASection
+
+---
+src/components/home/HeroSection.jsx
+---
+Full viewport height (min-h-screen) section.
+Background layers (all stacked with absolute positioning):
+- Layer 1 (bottom): bg-gradient-to-br from-choco-900 via-choco-800 to-[#3d1500]
+- Layer 2: Radial gradient overlay: radial-gradient(ellipse at 70% 50%, rgba(212,165,116,0.15) 0%, transparent 60%)
+- Layer 3: SparkleField component
+- Layer 4: FloatingParticles component
+- Layer 5: content (relative z-10)
+
+DESKTOP LAYOUT: md:flex-row, Left column md:w-3/5 (all text content), Right column md:w-2/5 (floating cake visual)
+MOBILE LAYOUT: flex-col, text first, image below
+
+LEFT CONTENT (staggered framer-motion animations):
+1. Small badge (delay 0): Pill shape, border border-caramel-400/40, bg-caramel-400/10. Text: "Handcrafted With Love". Font Dancing Script, text-caramel-300, text-lg. framer-motion fade in from left.
+2. Main heading (delay 0.1): Line 1 "Your Dream Cake" - Playfair Display, 5xl md:7xl, font-black, text-white. Line 2 "Starts Here" - same size but text-gradient shimmer animation. framer-motion fade up.
+3. Tagline (delay 0.2): settings.heroSubtitle text. Poppins, text-base md:text-lg, text-caramel-200, max-w-lg, leading-relaxed. framer-motion fade up.
+4. Buttons row (delay 0.3): Button 1 "Order Your Cake" btn-primary, animate-pulse-soft. Button 2 "See Our Work" btn-outline, scrolls to #gallery-section. Gap between: gap-4, flex-wrap.
+5. Trust badges row (delay 0.4): 3 small pills: "Fresh Daily", "Custom Design", "Free Delivery". Each bg-choco-800/80 border border-caramel-700/40 rounded-full px-3 py-1. Text text-xs text-caramel-300. flex-wrap, gap-2.
+
+RIGHT VISUAL (A decorative stack - no external image needed):
+- Large circle w-64 h-64 md:w-80 md:h-80
+- Background: radial gradient from caramel-400 to choco-700
+- Border: 4px solid with caramel gradient
+- animate-float
+- Inside: 🎂 emoji, text-8xl, centered
+- Around it: 3 small floating badge pills (animate-float-slow with different delays): "Custom Design", "Fresh Baked", "Love In Every Slice". Each positioned absolutely around the circle. bg-choco-800 border border-caramel-400/50 rounded-full px-3 py-1 text-xs.
+- Glow behind circle: absolute blur-3xl bg-caramel-400/20 w-72 h-72 rounded-full animate-glow.
+
+SCROLL INDICATOR (bottom center of hero):
+- Absolute bottom-8, centered
+- "Scroll to explore" in Dancing Script, text-sm, text-caramel-400/60
+- Animated bouncing chevron-down icon
+- Fades out when scrolled (useEffect scroll listener, opacity transition)
+
+---
+src/components/home/CategorySection.jsx
+---
+id="gallery-section" for scroll target.
+Background: bg-gradient-to-b from-choco-900 to-choco-800. Padding: py-20.
+Header: AnimatedSection > section-subtitle "What We Do Best" > section-title "Our Specialties". Decorative line: w-24 h-1 bg-gradient-to-r from-caramel-400 to-rose-cake mx-auto mt-4.
+
+CATEGORIES: 4 default (+ any added by admin in settings):
+- Default: Chocolate, Vanilla Overloaded, Chocolate Custom Design
+Grid: grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6
+
+Each CategoryCard:
+- Tall card, aspect-[3/4]
+- Background: first gallery image with that category tag OR gradient fallback
+- If image: img with object-cover + gradient overlay. If no image: gradient bg unique per category:
+  - Chocolate: from-choco-800 to-choco-600
+  - Vanilla: from-amber-900 to-yellow-800
+  - Overloaded: from-stone-900 to-choco-800
+  - Custom: from-rose-900 to-pink-900
+- Bottom overlay: gradient from transparent to black/90
+- Category emoji + name: absolute bottom-4 left-4. Name: Playfair Display, text-xl font-bold, text-white. Emoji: text-2xl.
+- "X Designs" count text-xs text-caramel-300 below name
+- On hover: framer-motion whileHover -> Image scales 1.08x, overlay darkens slightly, "Explore" button slides up from bottom with motion.div, btn-primary but smaller, w-full, bottom-0 absolute
+- rounded-3xl, overflow-hidden, cursor-pointer
+- On click: navigate to /gallery with category filter in URL (/gallery?cat=chocolate)
+
+---
+src/components/home/FeaturedCarousel.jsx
+---
+Background: bg-choco-800/50. Padding: py-20.
+Header: section-subtitle "Our Most Loved Cakes" > section-title "Featured Creations".
+Carousel shows 1 item mobile, 2 tablet, 3 desktop at once.
+State: currentIndex, autoplay with setInterval every 4 seconds. Pause autoplay on hover.
+
+CARDS from gallery items where isFeatured=true, fallback to first 6.
+Each card:
+- Rounded-3xl overflow-hidden
+- Image: aspect-square object-cover w-full
+- Bottom section: bg-choco-800 p-4. Caption text-sm text-caramel-100, 2-line clamp. Category badge pill, caramel bg, text-xs. OrderButton component md size.
+- On click image: open lightbox
+- framer-motion whileHover: y: -8, transition: spring
+
+Navigation:
+- Prev/Next circular buttons (caramel border, bg-choco-800, hover:bg-caramel-400). Positioned on left/right sides.
+- Dot indicators below (filled caramel for active, outline for others).
+- Smooth CSS transition on slide.
+Use framer-motion AnimatePresence for slide transitions (direction-aware sliding left/right based on navigation direction).
+
+---
+src/components/home/DeliveredSection.jsx
+---
+Background: bg-gradient-to-b from-choco-800 to-choco-900. Padding: py-20.
+Header: section-subtitle "Happy Customers, Happy Hearts" > section-title "Delivered With Love".
+Masonry grid using CSS columns: columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4.
+Each delivered item from gallery where type='delivered', max 6.
+- break-inside-avoid
+- rounded-3xl overflow-hidden relative group cursor-pointer
+- Image: w-full object-cover natural height (for masonry effect)
+- Caption overlay: always visible on mobile, hover on desktop. absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 pb-5. Caption text: text-sm text-white translate-y-2 group-hover:translate-y-0 opacity-70 group-hover:opacity-100 transition-all.
+- OrderButton sm absolute bottom-3 right-3
+- Warm image filter: brightness-95 saturate-110
+- framer-motion: initial opacity-0 y:30, whileInView animate, viewport once
+"See All Works" button below grid: btn-outline, navigates to /gallery?filter=delivered.
+
+---
+src/components/home/HowToOrderSection.jsx
+---
+Background: bg-choco-900 with subtle dot pattern overlay. Padding: py-20.
+Header: section-title "How To Order".
+3 steps: flex-col md:flex-row, items-start, gap-8.
+Between steps (desktop only): dashed line connector: <div class="hidden md:flex items-center flex-1 mt-8"><div class="w-full border-t-2 border-dashed border-caramel-700/50"></div></div>
+
+Each step (AnimatedSection with stagger):
+- Number: large text-6xl md:text-8xl font-playfair font-black text-gradient opacity-80
+- Icon circle: w-16 h-16 rounded-full bg-caramel-400/20 border-2 border-caramel-400/40. Emoji inside.
+- Title: Playfair Display, text-xl font-bold, text-white
+- Description: Poppins text-sm text-caramel-200 leading-relaxed
+- card-glass p-6 rounded-3xl flex-1
+
+Steps:
+1. Browse & Pick - Browse our gallery, pick the cake you love
+2. Place Your Order - Send us a message via WhatsApp or Facebook
+3. Receive & Enjoy - Get fresh delivery right to your door
+
+---
+src/components/home/CTASection.jsx
+---
+Full width, py-24.
+Background: bg-gradient-to-br from-choco-900 via-[#3d1500] to-choco-900 bg-[length:300%_300%] animate-gradient (slow shifting gradient).
+SparkleField on top.
+Content centered:
+- Heading: "Ready To Order Your Dream Cake?" section-title text-center
+- Subtext: Poppins text-lg text-caramel-200 max-w-xl mx-auto text-center
+- TWO big buttons: WhatsApp: bg-gradient-to-r from-green-500 to-green-700, icon "Order on WhatsApp". Facebook: bg-gradient-to-r from-blue-500 to-blue-700, icon "Message on Facebook". Show "Recommended" green badge on whichever is set as primary.
+- Phone display: whatsappNumber text-caramel-300
+- All framer-motion animated in sequence.
+
+Also create:
+- src/components/home/YouTubeSection.jsx: Shows YouTube channel embed/link if settings.youtubeChannelUrl is set. bg-choco-900 py-20.
+- src/components/home/TestimonialsSection.jsx: 3 hardcoded testimonial cards in card-dark style. Names, star ratings, review text. bg-choco-800 py-20.
+
+Make sure HomePage imports and uses Navbar, Footer, and FloatingOrderButton from shared components.
