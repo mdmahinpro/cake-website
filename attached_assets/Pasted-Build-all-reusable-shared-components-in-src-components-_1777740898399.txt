@@ -1,0 +1,33 @@
+Build all reusable shared components in src/components/shared:
+
+1. src/components/shared/SparkleField.jsx
+Renders 25 sparkle particles floating in the background. Each sparkle is a <span> with ✦ or ✧ or ★ character. Position absolute, pointer-events-none, overflow-hidden parent. Each gets randomized top, left, size (8-22px), opacity(0.08-0.35), animation-delay (0-4s), animation-duration (2-5s), color caramel/pink/cream. Use useMemo to generate stable particle array. Use animate-sparkle Tailwind animation. Parent: div absolute inset-0 overflow-hidden pointer-events-none z-0
+
+2. src/components/shared/FloatingParticles.jsx
+25 small circular blobs that drift slowly. Each rounded-full, sizes 4px-16px, colors caramel-400/10, rose-cake/10, white/5. Random positions, animate-float-slow with random delays. Absolute positioned, pointer-events-none.
+
+3. src/components/shared/AnimatedSection.jsx
+Props: children, className, delay (0-500ms). Uses useIntersection hook. When visible: applies animate-fade-up opacity-100. When not visible: opacity-0 translate-y-10. transition-all duration-700, delay passed via style transitionDelay: `${delay}ms`
+
+4. src/components/shared/Navbar.jsx
+Fixed top, w-full, z-50. Background: bg-choco-900/80 backdrop-blur-xl border-b border-caramel-800/30. On scroll (useEffect window scroll listener) adds stronger blur+shadow.
+LEFT: Logo area - 🎂 emoji + shop name from settings in Dancing Script font. Text gradient from-caramel-300 to-rose-cake. font-size text-2xl md:text-3xl. Link to /.
+CENTER (desktop only, hidden on mobile): Nav links: Home, Gallery, Order Now. Each text-caramel-200 hover:text-caramel-400, font-poppins text-sm font-medium. Smooth underline animation on hover (border-b border-caramel-400 scale-x-0 hover:scale-x-100).
+RIGHT: Order Now pill button (btn-primary, smaller px-4 py-2 text-sm). WhatsApp/Facebook icon based on settings.orderChannel. Mobile hamburger icon button (three horizontal lines, caramel color).
+MOBILE MENU (full screen overlay): When hamburger clicked, full screen overlay slides in from right. Background: bg-choco-900/98 backdrop-blur. X close button top-right. Links stacked vertically, large text-2xl, centered, font-playfair. Staggered framer-motion animation on each link. Order button at bottom full width. Social icons row at bottom.
+Use framer-motion for mobile menu: AnimatePresence + motion.div. initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '100%' }. transition: { type: 'spring', damping: 25 }
+
+5. src/components/shared/Footer.jsx
+Background: bg-choco-900 border-t border-caramel-800/30. 4 sections stacked on mobile, 3-col grid on desktop.
+LEFT: Logo + tagline + social icons row. Social icons: FaFacebook, FaInstagram, FaWhatsapp, FaYoutube from react-icons/fa. Each 40x40 rounded-full border border-caramel-700, hover:bg-caramel-400.
+CENTER: Quick links: Home, Gallery, Order Now.
+RIGHT: Contact - WhatsApp number, Facebook page, Order Now button.
+BOTTOM BAR: © 2025 {shopName}. Made with ❤️ by TECHELY. text-sm text-choco-400.
+
+6. src/components/shared/FloatingOrderButton.jsx
+Fixed, bottom-6 right-6, z-50. Round button, 60px x 60px on desktop, 56px mobile. WhatsApp mode: bg-gradient-to-br from-green-400 to-green-600, WhatsApp icon. Facebook mode: bg-gradient-to-br from-blue-500 to-blue-700, Facebook icon. Icon 28px white. animate-bounce-slow. Tooltip on hover (desktop): "Order Now!" text bubble above button. On click: openOrderChannel(settings, 'General inquiry', 'Custom'). framer-motion: initial scale 0, animate scale 1 with spring after 2s delay.
+
+7. src/components/shared/OrderButton.jsx
+Reusable "Order This Cake" button used on every cake card. Props: caption, category, size (sm/md/lg), className. Shows WhatsApp or Facebook icon based on settings.orderChannel. Text: "Order" (sm), "Order This Cake" (md/lg). Style: btn-primary with icon. On click: openOrderChannel(settings, caption, category). Prevents event propagation so lightbox doesn't open when order button clicked.
+
+All components must be mobile-first and use Tailwind only (no inline style except dynamic values).
