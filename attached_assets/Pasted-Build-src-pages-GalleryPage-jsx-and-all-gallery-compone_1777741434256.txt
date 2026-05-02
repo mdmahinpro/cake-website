@@ -1,0 +1,139 @@
+Build src/pages/GalleryPage.jsx and all gallery components.
+
+src/pages/GalleryPage.jsx
+Layout:
+1. GalleryHero (page header)
+2. FilterBar (sticky)
+3. SearchBar
+4. GalleryGrid
+5. Lightbox (conditional overlay)
+
+State management:
+- activeFilter (string, default 'all')
+- searchQuery (string)
+- lightboxItem (object|null)
+- lightboxIndex (number)
+- visibleCount (number, default 12)
+- filteredItems (computed from gallery filter + search)
+
+Read URL params on mount: ?cat=chocolate sets activeFilter.
+
+---
+GalleryHero
+---
+Height: h-48 md:h-64. Background: bg-gradient-to-br from-choco-900 to-choco-700. SparkleField. Centered content:
+- "Our Cake Gallery" Playfair Display, 4xl md:6xl, font-black, text-white
+- "Every cake is a masterpiece" Dancing Script, text-2xl, text-caramel-300
+- Breadcrumb: Home > Gallery (small, text-caramel-400/60)
+framer-motion fadeIn.
+
+---
+FilterBar (sticky top-[70px] z-40)
+---
+Background: bg-choco-900/90 backdrop-blur-xl border-b border-caramel-800/30. Padding: py-3 px-4.
+Pills: horizontal scroll (overflow-x-auto, hide scrollbar scrollbar-none) flex gap-2 flex-nowrap pb-1.
+Categories: All, Chocolate, Vanilla, Overloaded Chocolate, Custom, Wedding, Birthday, Delivered Orders.
+Each pill button:
+- Active: bg-caramel-400 text-white shadow-lg shadow-caramel-900/40
+- Inactive: border border-caramel-700/50 text-caramel-300 hover:border-caramel-400
+- On click: update activeFilter, update URL param, scroll to top of grid.
+- Item count badge per pill: bg-white/10 rounded-full px-1.5 text-xs ml-1
+
+---
+SearchBar
+---
+py-4 px-4 bg-choco-900/50. Input: input-dark class, pl-10 (icon inside). MagnifyingGlass icon absolute left-3, text-caramel-400. Clear X button appears when query not empty. Instant filter (onChange updates searchQuery state). "X results found" text below text-sm text-caramel-400.
+
+---
+GalleryGrid
+---
+Masonry using CSS columns: columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4.
+For each visible filtered item (filteredItems.slice(0, visibleCount)):
+
+GalleryCard component:
+- break-inside-avoid mb-3 md:mb-4
+- relative group cursor-pointer rounded-2xl overflow-hidden
+- framer-motion: initial opacity:0, scale:0.95, whileInView animate, viewport once, stagger delay based on index % 8 * 0.05
+
+IMAGE:
+- w-full object-cover natural height
+- framer-motion whileHover scale 1.04 on inner div
+- transition duration 500ms
+- Warm filter CSS: brightness(0.95) saturate(1.1) in base, remove on hover
+
+OVERLAY (always partial visibility on mobile, hover on desktop):
+- absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent
+- opacity-60 group-hover:opacity-100 transition-opacity duration-300
+
+BADGES (top row, absolute top-3 left-3 right-3, flex justify-between):
+- Left: category badge pill, bg-caramel-400/90 text-white text-xs font-medium
+- Right: YouTube badge if item.youtubeUrl: pill, bg-red-600/90 text-white text-xs "Video"
+
+CAPTION (absolute bottom area):
+- p-3 translate-y-1 group-hover:translate-y-0 transition-transform duration-300
+- Caption: text-xs md:text-sm text-white/90 line-clamp-2 font-poppins
+
+ORDER BUTTON:
+- absolute bottom-3 right-3
+- Only visible: opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100
+- transition-all duration-200
+- OrderButton component sm size
+
+On card click (except order button click):
+- Set lightboxItem to this item
+- Set lightboxIndex to its index in filteredItems
+
+LOAD MORE button:
+- Show if visibleCount < filteredItems.length
+- btn-outline mx-auto block mt-8
+- "Load More Cakes" text
+- On click: visibleCount += 12
+
+Empty state if filteredItems.length === 0:
+- Centered, py-20
+- 🎂 emoji text-8xl animate-bounce-slow
+- "No cakes found" Playfair text-2xl
+- "Try a different filter or search term" text-caramel-300
+- "Clear Filters" btn-outline
+
+---
+Lightbox Component src/components/gallery/Lightbox.jsx
+---
+Props: item, index, items, onClose, onNext, onPrev.
+Full screen overlay: fixed inset-0 z-[100] bg-black/96 backdrop-blur-md.
+framer-motion: initial opacity 0, animate opacity 1, exit opacity 0.
+
+LAYOUT: flex flex-col h-full.
+
+CLOSE BUTTON: absolute top-4 right-4 z-10. X icon, w-10 h-10, rounded-full, bg-white/10 hover:bg-white/20. framer-motion whileHover scale 1.1. Also close on overlay click if clicking outside image.
+
+IMAGE AREA: flex-1 flex items-center justify-center p-4 relative.
+- Image: max-w-full max-h-[70vh] object-contain rounded-2xl
+- framer-motion on image (key=item.id): initial scale 0.85 opacity 0, animate scale 1 opacity 1
+- transition: spring stiffness 300
+
+NAVIGATION ARROWS (absolute sides, desktop):
+- Prev: absolute left-4 top-1/2 -translate-y-1/2
+- Next: absolute right-4 top-1/2 -translate-y-1/2
+- Each: w-12 h-12 rounded-full bg-white/10 hover:bg-caramel-400/80 transition, flex items-center justify-center
+- ChevronLeft / ChevronRight icons
+
+BOTTOM INFO PANEL: bg-choco-900/95 p-4 rounded-t-3xl.
+- Caption: font-poppins text-base text-white mb-2
+- Category badge + if video: "Watch Making Video" red button opens YouTube link
+- OrderButton lg size
+- Navigation dots: current/total indicator "3 / 12" text-caramel-400 text-sm
+
+TOUCH/SWIPE: useEffect on mount:
+let startX = 0;
+const handleTouchStart = (e) => { startX = e.touches[0].clientX; };
+const handleTouchEnd = (e) => { const diff = startX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) diff > 0 ? onNext() : onPrev(); };
+Add/remove listeners on mount/unmount.
+
+KEYBOARD: useEffect: Escape -> onClose, ArrowLeft -> onPrev, ArrowRight -> onNext.
+
+COUNTER BADGE: absolute top-4 left-4: "3 / 12" in pill, bg-black/60 text-white text-sm.
+
+AnimatePresence wraps the entire lightbox for smooth open/close.
+
+Make sure GalleryPage imports and uses Navbar, Footer, and FloatingOrderButton from shared components.
