@@ -1,168 +1,281 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SPRINKLE_COLORS = [
-  "#ff6b9d", "#00d4ff", "#ffd93d", "#6bcb77",
-  "#ff9a3c", "#c77dff", "#ff4444", "#44eeff",
-];
-
-function buildSprinkles() {
-  const primes = [17, 31, 47, 61, 79, 97, 113, 127, 149, 163, 181, 199];
-  const regions = [
-    { n: 14, x0: 22, xW: 150, y0: 172, yH: 44 },
-    { n: 10, x0: 38, xW: 116, y0: 112, yH: 50 },
-    { n:  7, x0: 58, xW:  74, y0:  64, yH: 34 },
+/* ── Deterministic sprinkle layout ── */
+const SCOL = ["#ff6b9d","#00d4ff","#ffd93d","#6bcb77","#ff9a3c","#c77dff","#ff4444","#44eeff"];
+function mkSprinkles() {
+  const P = [17,31,47,61,79,97,113,127,149,163,181,199];
+  const R = [
+    {n:13,x0:26,xW:148,y0:171,yH:43},
+    {n:9, x0:47,xW:106,y0:113,yH:48},
+    {n:6, x0:64,xW:72, y0:66, yH:32},
   ];
-  const out: { id: number; x: number; y: number; rot: number; len: number; color: string }[] = [];
-  let id = 0;
-  for (let ri = 0; ri < regions.length; ri++) {
-    const r = regions[ri];
-    for (let i = 0; i < r.n; i++) {
-      out.push({
-        id,
-        x:   r.x0 + (id * primes[(id * 3) % primes.length] * 7) % r.xW,
-        y:   r.y0 + (id * primes[(id * 7 + 2) % primes.length] * 3) % r.yH,
-        rot: (id * primes[(id * 11 + 5) % primes.length] * 11) % 180,
-        len: 5 + (id % 4),
-        color: SPRINKLE_COLORS[(id + ri * 3) % SPRINKLE_COLORS.length],
-      });
-      id++;
+  const out:{id:number;x:number;y:number;rot:number;len:number;color:string}[]=[];
+  let id=0;
+  for(let ri=0;ri<R.length;ri++){
+    const r=R[ri];
+    for(let i=0;i<r.n;i++){
+      out.push({id,
+        x:r.x0+(id*P[(id*3)%P.length]*7)%r.xW,
+        y:r.y0+(id*P[(id*7+2)%P.length]*3)%r.yH,
+        rot:(id*P[(id*11+5)%P.length]*11)%180,
+        len:5+(id%4),
+        color:SCOL[(id+ri*3)%SCOL.length],
+      });id++;
     }
   }
   return out;
 }
+const SPRINKLES = mkSprinkles();
+const CANDLES=[{x:76,c:"#ff6b9d"},{x:90,c:"#00d4ff"},{x:110,c:"#ffd93d"},{x:124,c:"#6bcb77"}];
+const DRIPS1=[36,50,64,78,92,106,120,134,148,162].map((x,i)=>({x,len:8+((x*7+i*13)%14)}));
+const DRIPS2=[46,59,72,86,100,114,128,142].map((x,i)=>({x,len:6+((x*11+i*7)%10)}));
 
-const STATIC_SPRINKLES = buildSprinkles();
-const CANDLES = [
-  { x: 72,  color: "#ff6b9d" },
-  { x: 88,  color: "#00d4ff" },
-  { x: 112, color: "#ffd93d" },
-  { x: 128, color: "#6bcb77" },
-];
+/* ── Layer geometry ──────────────────────────────────────────────
+   3D cylinder: top face (lit ellipse) + side body (gradient path)
+   + bottom rim arc (dark curved edge at base)
+   cx=100, perspective ry = rx*0.2
+──────────────────────────────────────────────────────────────── */
+interface LayerProps {
+  topY:number; height:number; rx:number;
+  sideId:string; topId:string;
+  delay:number;
+}
+function CakeLayer({topY,height,rx,sideId,topId,delay}:LayerProps) {
+  const ry = rx * 0.2;
+  const bottomY = topY + height;
+  const cx = 100;
+  return (
+    <motion.g
+      initial={{ opacity:0, y:-28 }}
+      animate={{ opacity:1, y:0 }}
+      transition={{ delay, type:"spring", stiffness:175, damping:22 }}
+    >
+      {/* Shadow beneath layer */}
+      <ellipse cx={cx} cy={bottomY+2} rx={rx+4} ry={(rx+4)*0.13} fill="rgba(0,0,0,0.2)"/>
+      {/* Cylinder body — path with curved bottom arc */}
+      <path
+        d={`M ${cx-rx},${topY} L ${cx-rx},${bottomY} A ${rx},${ry} 0 0,0 ${cx+rx},${bottomY} L ${cx+rx},${topY} Z`}
+        fill={`url(#${sideId})`}
+      />
+      {/* Bottom dark rim */}
+      <path d={`M ${cx-rx},${bottomY} A ${rx},${ry} 0 0,0 ${cx+rx},${bottomY}`} fill="rgba(0,0,0,0.28)"/>
+      {/* Top face (lit) */}
+      <ellipse cx={cx} cy={topY} rx={rx} ry={ry} fill={`url(#${topId})`}/>
+      {/* Top rim specular highlight */}
+      <path d={`M ${cx-rx},${topY} A ${rx},${ry} 0 0,1 ${cx+rx},${topY}`}
+        fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5"/>
+    </motion.g>
+  );
+}
 
-// 0=idle 1=bowl+ingredients 2=mixing 3=oven 4=layers 5=decorate
+interface FrostProps {
+  y:number; rx:number; delay:number;
+  drips:{x:number;len:number}[];
+}
+function FrostingRing({y,rx,delay,drips}:FrostProps) {
+  const ry = rx * 0.19;
+  const ringH = 14;
+  const cx = 100;
+  return (
+    <motion.g initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay, duration:0.55 }}>
+      {/* Ring body */}
+      <path
+        d={`M ${cx-rx},${y} L ${cx-rx},${y+ringH} A ${rx},${ry} 0 0,0 ${cx+rx},${y+ringH} L ${cx+rx},${y} Z`}
+        fill="url(#fSide)"
+      />
+      {/* Bottom arc (curved edge) */}
+      <path d={`M ${cx-rx},${y+ringH} A ${rx},${ry} 0 0,0 ${cx+rx},${y+ringH}`}
+        fill="#c0c0c0" opacity="0.55"/>
+      {/* Top face */}
+      <ellipse cx={cx} cy={y} rx={rx} ry={ry} fill="url(#fTop)"/>
+      {/* Top highlight */}
+      <path d={`M ${cx-rx},${y} A ${rx},${ry} 0 0,1 ${cx+rx},${y}`}
+        fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="1.5"/>
+      {/* Drips hanging from bottom ring */}
+      {drips.map((d)=>(
+        <path key={d.x}
+          d={`M ${d.x-3.5},${y+ringH} L ${d.x-3},${y+ringH+d.len} Q ${d.x},${y+ringH+d.len+4.5} ${d.x+3},${y+ringH+d.len} L ${d.x+3.5},${y+ringH} Z`}
+          fill="white" opacity="0.92"
+        />
+      ))}
+    </motion.g>
+  );
+}
+
 export default function AnimatedCake() {
-  const [phase, setPhase] = useState(0);
-  const sprinkles = useMemo(() => STATIC_SPRINKLES, []);
+  const [phase, setPhase]   = useState(0);
+  const [cycle, setCycle]   = useState(0);
+  const sprinkles = useMemo(()=>SPRINKLES,[]);
 
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setPhase(1), 200),
-      setTimeout(() => setPhase(2), 1900),
-      setTimeout(() => setPhase(3), 3400),
-      setTimeout(() => setPhase(4), 5000),
-      setTimeout(() => setPhase(5), 7000),
+  /* ── Looping cycle: 0→1→2→3→4→5 display 5s → fade 0 → 3s break → restart ── */
+  useEffect(()=>{
+    setPhase(0);
+    const T=[
+      setTimeout(()=>setPhase(1),  400),   // bowl + ingredients
+      setTimeout(()=>setPhase(2),  2000),  // mixing
+      setTimeout(()=>setPhase(3),  3500),  // oven
+      setTimeout(()=>setPhase(4),  5200),  // layers stacking
+      setTimeout(()=>setPhase(5),  7500),  // decorations
+      setTimeout(()=>setPhase(0),  12600), // fade out (5.1s display)
+      setTimeout(()=>setCycle(c=>c+1), 15700), // 3.1s break, then restart
     ];
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    return ()=>T.forEach(clearTimeout);
+  },[cycle]);
 
   return (
-    <svg
-      viewBox="0 0 200 260"
-      className="w-full h-full drop-shadow-2xl"
-      aria-label="Cake baking animation"
-      style={{ overflow: "visible" }}
-    >
+    <svg viewBox="0 0 200 265" className="w-full h-full"
+      aria-label="3D cake baking animation" style={{overflow:"visible"}}>
       <defs>
-        <linearGradient id="cakeGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fff8e8" />
-          <stop offset="100%" stopColor="#fce5c0" />
+        {/* ── Cake side gradients (horizontal lighting: left=lit, right=shadow) ── */}
+        <linearGradient id="cS1" x1="24"  y1="0" x2="176" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#c89840"/>
+          <stop offset="22%"  stopColor="#f4d864"/>
+          <stop offset="48%"  stopColor="#d4a840"/>
+          <stop offset="78%"  stopColor="#9a6820"/>
+          <stop offset="100%" stopColor="#5a3808"/>
         </linearGradient>
-        <linearGradient id="plateGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f4f4f4" />
-          <stop offset="100%" stopColor="#d4d4d4" />
+        <linearGradient id="cS2" x1="45"  y1="0" x2="155" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#c89840"/>
+          <stop offset="22%"  stopColor="#f4d864"/>
+          <stop offset="48%"  stopColor="#d4a840"/>
+          <stop offset="78%"  stopColor="#9a6820"/>
+          <stop offset="100%" stopColor="#5a3808"/>
         </linearGradient>
-        <radialGradient id="flameGrad" cx="50%" cy="65%">
-          <stop offset="0%"   stopColor="#fff9c4" />
-          <stop offset="45%"  stopColor="#ffb300" />
-          <stop offset="100%" stopColor="#ff6d00" stopOpacity="0.75" />
-        </radialGradient>
-        <radialGradient id="glowBg" cx="50%" cy="60%">
-          <stop offset="0%"   stopColor="#00beff" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#00beff" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="ovenGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor="#ff9a3c" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#ff6d00" stopOpacity="0.3" />
-        </radialGradient>
-        <linearGradient id="bowlGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#d8ecff" />
-          <stop offset="100%" stopColor="#a8cfe8" />
+        <linearGradient id="cS3" x1="62"  y1="0" x2="138" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#c89840"/>
+          <stop offset="22%"  stopColor="#f4d864"/>
+          <stop offset="48%"  stopColor="#d4a840"/>
+          <stop offset="78%"  stopColor="#9a6820"/>
+          <stop offset="100%" stopColor="#5a3808"/>
         </linearGradient>
-        <filter id="softShadow">
-          <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#00beff" floodOpacity="0.2" />
-        </filter>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        {/* ── Cake top face (radial, upper-left = highlight) ── */}
+        <radialGradient id="cT" cx="30%" cy="28%" r="72%">
+          <stop offset="0%"   stopColor="#fce888"/>
+          <stop offset="45%"  stopColor="#d4a438"/>
+          <stop offset="100%" stopColor="#7a4010"/>
+        </radialGradient>
+        {/* ── White frosting ── */}
+        <radialGradient id="fTop" cx="30%" cy="28%" r="70%">
+          <stop offset="0%"   stopColor="#ffffff"/>
+          <stop offset="55%"  stopColor="#f0f0f0"/>
+          <stop offset="100%" stopColor="#d0d0d0"/>
+        </radialGradient>
+        <linearGradient id="fSide" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#f8f8f8"/>
+          <stop offset="100%" stopColor="#c4c4c4"/>
+        </linearGradient>
+        {/* ── Plate ── */}
+        <radialGradient id="pTop" cx="33%" cy="28%" r="72%">
+          <stop offset="0%"   stopColor="#ffffff"/>
+          <stop offset="65%"  stopColor="#e4e4e4"/>
+          <stop offset="100%" stopColor="#b8b8b8"/>
+        </radialGradient>
+        <linearGradient id="pSide" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#d8d8d8"/>
+          <stop offset="100%" stopColor="#9c9c9c"/>
+        </linearGradient>
+        {/* ── Flame ── */}
+        <radialGradient id="flame" cx="50%" cy="68%" r="58%">
+          <stop offset="0%"   stopColor="#fff9c4"/>
+          <stop offset="38%"  stopColor="#ffb300"/>
+          <stop offset="100%" stopColor="#ff6d00" stopOpacity="0.72"/>
+        </radialGradient>
+        {/* ── Oven glow ── */}
+        <radialGradient id="ovGlow" cx="50%" cy="50%" r="55%">
+          <stop offset="0%"   stopColor="#ffbb44" stopOpacity="0.98"/>
+          <stop offset="62%"  stopColor="#ff7010" stopOpacity="0.8"/>
+          <stop offset="100%" stopColor="#cc3800" stopOpacity="0.28"/>
+        </radialGradient>
+        {/* ── Bowl exterior ── */}
+        <linearGradient id="bowlExt" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#b8d4ee"/>
+          <stop offset="38%"  stopColor="#e2f0ff"/>
+          <stop offset="100%" stopColor="#6888a8"/>
+        </linearGradient>
+        <radialGradient id="bowlInt" cx="48%" cy="38%" r="66%">
+          <stop offset="0%"   stopColor="#dceeff"/>
+          <stop offset="100%" stopColor="#4a6070"/>
+        </radialGradient>
+        {/* ── Batter ── */}
+        <radialGradient id="batter" cx="44%" cy="42%" r="65%">
+          <stop offset="0%"   stopColor="#f8da70"/>
+          <stop offset="100%" stopColor="#bf8e18"/>
+        </radialGradient>
+        {/* ── Candle side overlay (lighting) ── */}
+        <linearGradient id="cndLit" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="rgba(255,255,255,0.3)"/>
+          <stop offset="35%"  stopColor="rgba(255,255,255,0.06)"/>
+          <stop offset="100%" stopColor="rgba(0,0,0,0.28)"/>
+        </linearGradient>
+        {/* ── Knob face ── */}
+        <radialGradient id="knobFace" cx="33%" cy="28%" r="70%">
+          <stop offset="0%"   stopColor="#1c3e5e"/>
+          <stop offset="100%" stopColor="#071828"/>
+        </radialGradient>
+        {/* ── Ambient glow ── */}
+        <radialGradient id="aGlow" cx="50%" cy="70%" r="55%">
+          <stop offset="0%"   stopColor="#00beff" stopOpacity="0.2"/>
+          <stop offset="100%" stopColor="#00beff" stopOpacity="0"/>
+        </radialGradient>
+        {/* ── Flame glow filter ── */}
+        <filter id="fg" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
 
-      {/* Ambient glow (always) */}
-      <ellipse cx="100" cy="210" rx="88" ry="55" fill="url(#glowBg)" />
+      {/* Ambient background glow */}
+      <ellipse cx="100" cy="200" rx="100" ry="70" fill="url(#aGlow)"/>
 
-      {/* ══ SCENE 1 + 2 : BOWL ══ */}
+      {/* ══════════════════ SCENE 1 + 2 : MIXING BOWL ══════════════════ */}
       <AnimatePresence>
-        {(phase >= 1 && phase <= 3) && (
-          <motion.g
-            key="bowl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30, scale: 0.85 }}
-            transition={{ duration: 0.6 }}
+        {(phase >= 1 && phase <= 2) && (
+          <motion.g key="bowl"
+            initial={{ opacity:0, y:18 }}
+            animate={{ opacity:1, y:0 }}
+            exit={{ opacity:0, y:-22, scale:0.88 }}
+            transition={{ duration:0.55 }}
           >
-            {/* Bowl body */}
-            <path
-              d="M35,128 C33,165 42,200 100,205 C158,200 167,165 165,128 Z"
-              fill="url(#bowlGrad)"
-              opacity="0.95"
-            />
-            {/* Bowl rim */}
-            <ellipse cx="100" cy="128" rx="65" ry="11" fill="#e0f0ff" />
-            <ellipse cx="100" cy="128" rx="65" ry="11" fill="none" stroke="#c5dff5" strokeWidth="1.5" />
-            {/* Bowl highlight */}
-            <path
-              d="M42,138 C42,165 48,192 70,202"
-              fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="3" strokeLinecap="round"
-            />
+            {/* Bowl shadow on surface */}
+            <ellipse cx="100" cy="234" rx="62" ry="9" fill="rgba(0,0,0,0.22)"/>
+            {/* Bowl exterior (3D curved shape) */}
+            <path d="M 34,126 Q 26,164 37,198 Q 55,230 100,235 Q 145,230 163,198 Q 174,164 166,126 Z"
+              fill="url(#bowlExt)"/>
+            {/* Bowl interior (darker cavity showing depth) */}
+            <path d="M 40,131 Q 33,168 44,196 Q 61,224 100,228 Q 139,224 156,196 Q 167,168 160,131 Z"
+              fill="url(#bowlInt)"/>
+            {/* Rim — ellipse at top of bowl */}
+            <ellipse cx="100" cy="126" rx="66" ry="11" fill="#d4e8fa"/>
+            <path d="M 34,126 A 66,11 0 0,1 166,126"
+              fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"/>
+            {/* Inner rim shadow */}
+            <ellipse cx="100" cy="131" rx="58" ry="8" fill="#90aec8" opacity="0.45"/>
 
-            {/* Batter fill (appears in phase 2) */}
+            {/* Batter pool (phase 2) */}
             <AnimatePresence>
               {phase >= 2 && (
-                <motion.ellipse
-                  key="batter"
-                  cx="100" cy="182"
-                  rx="52" ry="14"
-                  fill="#f5c56a"
-                  opacity="0.85"
-                  initial={{ scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 0.85 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  style={{ transformOrigin: "100px 182px" }}
+                <motion.ellipse key="bat"
+                  cx="100" cy="214" rx="50" ry="9" fill="url(#batter)" opacity="0.9"
+                  initial={{ scaleX:0, opacity:0 }}
+                  animate={{ scaleX:1, opacity:0.9 }}
+                  exit={{ opacity:0 }}
+                  transition={{ duration:0.5 }}
+                  style={{ transformOrigin:"100px 214px" }}
                 />
               )}
             </AnimatePresence>
 
-            {/* Swirl path in bowl (phase 2) */}
+            {/* Swirl in batter (phase 2) */}
             <AnimatePresence>
               {phase >= 2 && (
-                <motion.g
-                  key="swirl"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                >
+                <motion.g key="swirl" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.35 }}>
                   <motion.path
-                    d="M100,175 C112,172 118,178 110,183 C102,188 90,183 94,178 C98,173 108,173 108,178"
-                    fill="none"
-                    stroke="#e8a840"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 1.8, repeat: 1, ease: "linear" }}
-                    style={{ transformOrigin: "100px 180px" }}
+                    d="M 100,208 C 113,205 119,212 112,217 C 104,222 90,217 94,211 C 98,205 114,207 113,213"
+                    fill="none" stroke="#c89018" strokeWidth="2.5" strokeLinecap="round"
+                    animate={{ rotate:[0,360] }}
+                    transition={{ duration:1.5, repeat:1, ease:"linear" }}
+                    style={{ transformOrigin:"100px 213px" }}
                   />
                 </motion.g>
               )}
@@ -171,303 +284,287 @@ export default function AnimatedCake() {
             {/* Whisk (phase 2) */}
             <AnimatePresence>
               {phase >= 2 && (
-                <motion.g
-                  key="whisk"
-                  initial={{ opacity: 0, rotate: -30 }}
-                  animate={{ opacity: 1, rotate: [-30, 20, -30] }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, repeat: 1 }}
-                  style={{ transformOrigin: "130px 130px" }}
+                <motion.g key="whisk"
+                  initial={{ opacity:0, rotate:-22 }}
+                  animate={{ opacity:1, rotate:[-22,16,-22] }}
+                  exit={{ opacity:0 }}
+                  transition={{ duration:0.9, repeat:1 }}
+                  style={{ transformOrigin:"136px 122px" }}
                 >
-                  {/* Whisk handle */}
-                  <line x1="130" y1="75" x2="116" y2="155" stroke="#8a7a6a" strokeWidth="3" strokeLinecap="round" />
-                  {/* Whisk wires */}
-                  <ellipse cx="113" cy="158" rx="8" ry="14" fill="none" stroke="#aaa" strokeWidth="1.5" />
-                  <line x1="110" y1="152" x2="116" y2="168" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="116" y1="152" x2="112" y2="168" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="136" y1="72" x2="122" y2="155" stroke="#8a7a6a" strokeWidth="3" strokeLinecap="round"/>
+                  <ellipse cx="119" cy="159" rx="9" ry="14" fill="none" stroke="#aaa" strokeWidth="1.5"/>
+                  <line x1="114" y1="152" x2="124" y2="168" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="124" y1="152" x2="114" y2="168" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="119" y1="145" x2="119" y2="173" stroke="#aaa" strokeWidth="1" strokeLinecap="round" opacity="0.6"/>
                 </motion.g>
               )}
             </AnimatePresence>
 
             {/* Ingredients dropping in (phase 1) */}
             {[
-              { x: 80,  startY: 60,  color: "#fff8dc", r: 10, label: "flour",  delay: 0 },
-              { x: 115, startY: 40,  color: "#ffe4b5", r: 8,  label: "butter", delay: 0.3 },
-              { x: 95,  startY: 50,  color: "#ffec8b", r: 7,  label: "egg",    delay: 0.6 },
-            ].map((ing) => (
-              <motion.circle
-                key={ing.label}
-                cx={ing.x}
-                cy={ing.startY}
-                r={ing.r}
-                fill={ing.color}
-                stroke="rgba(0,0,0,0.1)"
-                strokeWidth="0.5"
-                initial={{ y: 0, opacity: 0 }}
-                animate={{ y: 80, opacity: [0, 1, 1, 0] }}
-                transition={{ delay: ing.delay, duration: 0.9, ease: "easeIn" }}
+              {x:84,  y:58,  color:"#fff6e0", r:9,   delay:0,    id:"fl"},
+              {x:116, y:38,  color:"#ffe8a0", r:7.5, delay:0.3,  id:"bt"},
+              {x:96,  y:48,  color:"#f8e060", r:6.5, delay:0.58, id:"eg"},
+              {x:76,  y:28,  color:"#f0f0ea", r:5.5, delay:0.85, id:"sg"},
+            ].map((ing)=>(
+              <motion.circle key={ing.id}
+                cx={ing.x} cy={ing.y} r={ing.r}
+                fill={ing.color} stroke="rgba(0,0,0,0.08)" strokeWidth="0.5"
+                initial={{ y:0, opacity:0 }}
+                animate={{ y:76, opacity:[0,1,1,0] }}
+                transition={{ delay:ing.delay, duration:0.85, ease:"easeIn" }}
               />
             ))}
-
-            {/* Flour puff */}
-            <motion.ellipse
-              cx="78" cy="125"
-              rx="14" ry="6"
-              fill="rgba(255,255,255,0.6)"
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: [0, 0.6, 0], scaleX: [0, 1.5, 0] }}
-              transition={{ delay: 0.9, duration: 0.8 }}
-              style={{ transformOrigin: "78px 125px" }}
+            {/* Flour puff on landing */}
+            <motion.ellipse cx="86" cy="126" rx="18" ry="5" fill="rgba(255,255,255,0.65)"
+              initial={{ opacity:0, scaleX:0 }}
+              animate={{ opacity:[0,0.65,0], scaleX:[0,1.7,0] }}
+              transition={{ delay:0.9, duration:0.75 }}
+              style={{ transformOrigin:"86px 126px" }}
             />
           </motion.g>
         )}
       </AnimatePresence>
 
-      {/* ══ SCENE 3 : OVEN ══ */}
+      {/* ══════════════════ SCENE 3 : OVEN ══════════════════ */}
       <AnimatePresence>
         {phase === 3 && (
-          <motion.g
-            key="oven"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.85, y: -20 }}
-            transition={{ duration: 0.6 }}
-            style={{ transformOrigin: "100px 150px" }}
+          <motion.g key="oven"
+            initial={{ opacity:0, y:18 }}
+            animate={{ opacity:1, y:0 }}
+            exit={{ opacity:0, y:-22 }}
+            transition={{ duration:0.55 }}
           >
-            {/* Oven body */}
-            <rect x="22" y="60" width="156" height="155" rx="14"
-              fill="#0d1e30" stroke="#00beff" strokeWidth="1.5"
-            />
-            {/* Control panel */}
-            <rect x="22" y="60" width="156" height="28" rx="14" fill="#0a1825" />
-            <rect x="22" y="74" width="156" height="14" rx="0" fill="#0a1825" />
-            {/* Knobs */}
-            {[55, 100, 145].map((kx) => (
+            {/* Oven shadow */}
+            <ellipse cx="100" cy="228" rx="86" ry="10" fill="rgba(0,0,0,0.28)"/>
+            {/* 3D box: top sliver (perspective top face) */}
+            <path d="M 18,56 L 182,56 L 178,46 L 22,46 Z" fill="#0c2038"/>
+            {/* 3D box: right sliver (depth face) */}
+            <path d="M 182,56 L 182,220 L 178,224 L 178,46 Z" fill="#050e18"/>
+            {/* Front face */}
+            <rect x="18" y="56" width="164" height="164" rx="11" fill="#071626"/>
+            <rect x="18" y="56" width="164" height="164" rx="11" fill="none" stroke="#00beff" strokeWidth="0.9" opacity="0.35"/>
+            {/* Control panel top */}
+            <rect x="18" y="56" width="164" height="36" rx="11" fill="#0c2038"/>
+            <rect x="18" y="84" width="164" height="8" rx="0" fill="#061020"/>
+            {/* Knobs x3 */}
+            {[50,100,150].map((kx,ki)=>(
               <g key={kx}>
-                <circle cx={kx} cy="74" r="9" fill="#132534" stroke="#00beff" strokeWidth="1" />
-                <motion.line
-                  x1={kx} y1="68" x2={kx} y2="65"
-                  stroke="#00beff" strokeWidth="1.5" strokeLinecap="round"
-                  animate={{ rotate: [0, 270] }}
-                  transition={{ delay: 0.2, duration: 1.2, repeat: Infinity, ease: "linear" }}
-                  style={{ transformOrigin: `${kx}px 74px` }}
+                <circle cx={kx} cy="73" r="13" fill="#071626" stroke="#00beff" strokeWidth="1.5"/>
+                <circle cx={kx} cy="72" r="9.5" fill="url(#knobFace)"/>
+                <ellipse cx={kx-3} cy={69} rx="3.5" ry="2.5" fill="rgba(255,255,255,0.3)"/>
+                <motion.line x1={kx} y1={66} x2={kx} y2={62}
+                  stroke="#00beff" strokeWidth="2" strokeLinecap="round"
+                  animate={{ rotate:[0, ki===1?180:270] }}
+                  transition={{ delay:0.2, duration:1.4, repeat:Infinity, ease:"linear" }}
+                  style={{ transformOrigin:`${kx}px 73px` }}
                 />
               </g>
             ))}
-            {/* Oven door frame */}
-            <rect x="36" y="96" width="128" height="106" rx="10" fill="#071320" />
-            {/* Oven window */}
-            <rect x="50" y="108" width="100" height="78" rx="8" fill="url(#ovenGlow)" />
-            {/* Window sheen */}
-            <rect x="50" y="108" width="100" height="78" rx="8"
-              fill="none" stroke="rgba(255,150,60,0.4)" strokeWidth="1"
+            {/* Temp display */}
+            <rect x="116" y="60" width="52" height="17" rx="3" fill="#00060e"/>
+            <text x="142" y="72" textAnchor="middle" fontSize="9" fill="#ff9a3c"
+              fontFamily="monospace" fontWeight="bold">180°C</text>
+            {/* Door frame */}
+            <rect x="30" y="98" width="140" height="112" rx="9" fill="#040c14"/>
+            {/* Oven window glow */}
+            <rect x="46" y="112" width="108" height="82" rx="7" fill="url(#ovGlow)"/>
+            {/* Window frame */}
+            <rect x="46" y="112" width="108" height="82" rx="7"
+              fill="none" stroke="#ff8030" strokeWidth="0.8"/>
+            {/* Glow pulse */}
+            <motion.rect x="46" y="112" width="108" height="82" rx="7"
+              fill="rgba(255,140,40,0.15)"
+              animate={{ opacity:[0.4,1,0.4] }}
+              transition={{ duration:1.4, repeat:Infinity }}
             />
             {/* Cake pan inside oven */}
-            <rect x="62" y="148" width="76" height="26" rx="5" fill="#c8a06a" />
-            <rect x="62" y="140" width="76" height="12" rx="3" fill="#dbb87a" />
-            {/* Pan handles */}
-            <rect x="56" y="142" width="8" height="8" rx="2" fill="#b8906a" />
-            <rect x="136" y="142" width="8" height="8" rx="2" fill="#b8906a" />
-            {/* Rising cake bump */}
-            <motion.path
-              d="M65,140 Q100,118 135,140"
-              fill="#f5d088"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-            />
-            {/* Door handle */}
-            <rect x="78" y="193" width="44" height="7" rx="3.5" fill="#00beff" opacity="0.8" />
-            {/* Heat waves rising from top */}
-            {[65, 85, 105, 125, 145].map((wx, wi) => (
-              <motion.path
-                key={wx}
-                d={`M${wx},58 C${wx - 4},50 ${wx + 4},42 ${wx},34`}
-                fill="none"
-                stroke="#ff9a3c"
-                strokeWidth="2"
-                strokeLinecap="round"
-                opacity="0.7"
-                animate={{ y: [-2, -8, -2], opacity: [0.7, 0.2, 0.7] }}
-                transition={{ delay: wi * 0.15, duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+            <motion.g initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.65 }}>
+              <rect x="56" y="162" width="88" height="23" rx="5" fill="#c8903c"/>
+              <rect x="56" y="154" width="88" height="11" rx="4" fill="#daa852"/>
+              <motion.path d="M 60,154 Q 100,136 140,154" fill="#ecc068"
+                initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:1.1 }}/>
+              <rect x="48" y="157" width="10" height="8" rx="2" fill="#b07828"/>
+              <rect x="142" y="157" width="10" height="8" rx="2" fill="#b07828"/>
+            </motion.g>
+            {/* Door handle 3D */}
+            <rect x="70" y="200" width="60" height="10" rx="5" fill="#2888b8"/>
+            <rect x="70" y="200" width="60" height="3.5" rx="2" fill="rgba(255,255,255,0.45)"/>
+            <rect x="70" y="205" width="60" height="5" rx="2.5" fill="#1060a0"/>
+            {/* Heat waves */}
+            {[54,74,100,126,146].map((wx,wi)=>(
+              <motion.path key={wx}
+                d={`M${wx},44 C${wx-5},36 ${wx+5},28 ${wx},20`}
+                fill="none" stroke="#ff9030" strokeWidth="2" strokeLinecap="round"
+                animate={{ y:[-2,-10,-2], opacity:[0.75,0.1,0.75] }}
+                transition={{ delay:wi*0.18, duration:1.3, repeat:Infinity, ease:"easeInOut" }}
               />
             ))}
-            {/* Temperature display */}
-            <rect x="110" y="64" width="40" height="14" rx="3" fill="#001020" />
-            <text x="130" y="74" textAnchor="middle" fontSize="8" fill="#ff9a3c" fontFamily="monospace">180°C</text>
           </motion.g>
         )}
       </AnimatePresence>
 
-      {/* ══ SCENE 4 + 5 : CAKE ASSEMBLY ══ */}
+      {/* ══════════════════ SCENE 4 + 5 : CAKE ══════════════════ */}
       <AnimatePresence>
         {phase >= 4 && (
-          <motion.g
-            key="cake"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+          <motion.g key="cake"
+            initial={{ opacity:0 }}
+            animate={{ opacity:1 }}
+            exit={{ opacity:0 }}
+            transition={{ duration:0.65 }}
           >
-            {/* Plate */}
-            <motion.rect
-              x="82" y="232" width="36" height="15" rx="4" fill="#ddd"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.05, duration: 0.3 }}
-            />
-            <motion.ellipse
-              cx="100" cy="237" rx="82" ry="11" fill="url(#plateGrad)"
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: 1, opacity: 1 }}
-              transition={{ delay: 0.1, type: "spring", stiffness: 220, damping: 22 }}
-              style={{ transformOrigin: "100px 237px" }}
-            />
+            {/* ── Plate (3D disc) ── */}
+            <ellipse cx="100" cy="257" rx="90" ry="13" fill="#aaaaaa"/>
+            <path d="M 10,246 L 190,246 A 90,14 0 0,1 10,246 Z" fill="url(#pSide)"/>
+            <rect x="10" y="243" width="180" height="13" fill="url(#pSide)"/>
+            <ellipse cx="100" cy="243" rx="90" ry="14" fill="url(#pTop)"/>
+            <path d="M 10,243 A 90,14 0 0,1 190,243"
+              fill="none" stroke="rgba(255,255,255,0.65)" strokeWidth="1.5"/>
 
-            {/* Layer 1 (bottom, widest) — drops in */}
-            <motion.rect
-              x="15" y="175" width="170" height="58" rx="11"
-              fill="url(#cakeGrad)" filter="url(#softShadow)"
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 20 }}
-            />
+            {/* ── Layer 1 ── topY=180, h=62, rx=76 */}
+            <CakeLayer topY={180} height={62} rx={76} sideId="cS1" topId="cT" delay={0.2}/>
 
-            {/* Frosting drips L1 */}
-            <motion.path
-              d="M28,160 L172,160 L172,175 Q165,193 159,175 Q152,193 146,175 Q139,193 133,175 Q126,193 120,175 Q113,193 107,175 Q100,193 94,175 Q87,193 81,175 Q74,193 68,175 Q61,193 55,175 Q48,193 42,175 L28,160 Z"
-              fill="white"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.65, duration: 0.4 }}
-            />
+            {/* ── Frosting 1 ── at y=180, rx=80 */}
+            <FrostingRing y={180} rx={80} delay={0.72} drips={DRIPS1}/>
 
-            {/* Layer 2 (middle) — drops in */}
-            <motion.rect
-              x="33" y="110" width="134" height="65" rx="11"
-              fill="url(#cakeGrad)"
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.85, type: "spring", stiffness: 200, damping: 20 }}
-            />
+            {/* ── Layer 2 ── topY=118, h=62, rx=55 */}
+            <CakeLayer topY={118} height={62} rx={55} sideId="cS2" topId="cT" delay={1.1}/>
 
-            {/* Frosting drips L2 */}
-            <motion.path
-              d="M44,97 L156,97 L156,110 Q151,126 146,110 Q141,126 136,110 Q131,126 126,110 Q121,126 116,110 Q111,126 106,110 Q101,126 96,110 Q91,126 86,110 Q81,126 76,110 Q71,126 66,110 Q61,126 56,110 L44,97 Z"
-              fill="white"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.3, duration: 0.4 }}
-            />
+            {/* ── Frosting 2 ── at y=118, rx=59 */}
+            <FrostingRing y={118} rx={59} delay={1.65} drips={DRIPS2}/>
 
-            {/* Layer 3 (top) — drops in */}
-            <motion.rect
-              x="55" y="62" width="90" height="48" rx="11"
-              fill="url(#cakeGrad)"
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5, type: "spring", stiffness: 200, damping: 20 }}
-            />
+            {/* ── Layer 3 ── topY=70, h=48, rx=38 */}
+            <CakeLayer topY={70} height={48} rx={38} sideId="cS3" topId="cT" delay={2.05}/>
 
-            {/* Rosettes (phase 5) */}
-            {phase >= 5 && [76, 100, 124].map((cx, i) => (
-              <motion.g key={cx}>
-                <motion.circle
-                  cx={cx} cy={59} r={12}
-                  fill="white"
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.12, type: "spring", stiffness: 280, damping: 18 }}
-                  style={{ transformOrigin: `${cx}px 59px` }}
-                />
-                <motion.circle
-                  cx={cx} cy={56} r={5}
-                  fill="rgba(255,255,255,0.95)"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.15 + i * 0.1, duration: 0.3 }}
-                />
-              </motion.g>
-            ))}
+            {/* ── Decorations (phase 5) ── */}
+            {phase >= 5 && (
+              <motion.g initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.3 }}>
+                {/* Top frosting cap */}
+                <motion.g initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0, duration:0.5 }}>
+                  <path d="M 58,65 L 58,80 A 42,8 0 0,0 142,80 L 142,65 Z" fill="url(#fSide)"/>
+                  <path d="M 58,80 A 42,8 0 0,0 142,80" fill="#c0c0c0" opacity="0.5"/>
+                  <ellipse cx="100" cy="65" rx="42" ry="8" fill="url(#fTop)"/>
+                  <path d="M 58,65 A 42,8 0 0,1 142,65"
+                    fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="1.5"/>
+                </motion.g>
 
-            {/* Candles + flames (phase 5) */}
-            {phase >= 5 && CANDLES.map((c, ci) => (
-              <motion.g
-                key={c.x}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + ci * 0.2, type: "spring", stiffness: 300 }}
-              >
-                <rect x={c.x - 4} y="28" width="8" height="36" rx="4" fill={c.color} />
-                <rect x={c.x - 2} y="31" width="2.5" height="26" rx="1.5" fill="rgba(255,255,255,0.35)" />
-                <line x1={c.x} y1="22" x2={c.x} y2="29" stroke="#555" strokeWidth="1.5" strokeLinecap="round" />
-                <g transform={`translate(${c.x} 16)`}>
-                  <motion.g
-                    animate={{ scaleX: [1, 0.72, 1.25, 0.85, 1.05, 1], scaleY: [1, 1.35, 0.75, 1.25, 0.9, 1] }}
-                    transition={{ duration: 0.85, repeat: Infinity, ease: "easeInOut", delay: ci * 0.12 }}
-                    style={{ transformOrigin: "0px 0px" }}
+                {/* Rosettes — 3D flower shapes on top face */}
+                {([78,100,122] as number[]).map((rx2,ri)=>(
+                  <motion.g key={rx2}
+                    initial={{ opacity:0, scale:0 }}
+                    animate={{ opacity:1, scale:1 }}
+                    transition={{ delay:0.28+ri*0.14, type:"spring", stiffness:260, damping:18 }}
+                    style={{ transformOrigin:`${rx2}px 63px` }}
                   >
-                    <ellipse cx="0" cy="0" rx="4.5" ry="9" fill="url(#flameGrad)" />
-                    <ellipse cx="0" cy="2" rx="2" ry="4.5" fill="#fff9c4" opacity="0.9" />
+                    {/* 5 petals */}
+                    {([0,72,144,216,288] as number[]).map((a)=>{
+                      const rad = a*Math.PI/180;
+                      const px = rx2 + Math.cos(rad)*5.5;
+                      const py = 63 + Math.sin(rad)*3;
+                      return (
+                        <ellipse key={a} cx={px} cy={py} rx="4.5" ry="2.8"
+                          fill="#ff90be" opacity="0.92"
+                          transform={`rotate(${a} ${px} ${py})`}
+                        />
+                      );
+                    })}
+                    {/* Center */}
+                    <circle cx={rx2} cy={63} r="3.8" fill="#ffd4e8"/>
+                    {/* Center highlight (3D sphere effect) */}
+                    <circle cx={rx2-1} cy={62} r="1.6" fill="rgba(255,255,255,0.72)"/>
                   </motion.g>
-                </g>
-              </motion.g>
-            ))}
+                ))}
 
-            {/* Sprinkles (phase 5) */}
-            {phase >= 5 && sprinkles.map((s, si) => (
-              <motion.rect
-                key={s.id}
-                x={s.x} y={s.y}
-                width={s.len} height="3" rx="1.5"
-                fill={s.color}
-                transform={`rotate(${s.rot} ${s.x + s.len / 2} ${s.y + 1.5})`}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 0.9, scale: 1 }}
-                transition={{ delay: si * 0.03, duration: 0.3, type: "spring" }}
-                style={{ transformOrigin: `${s.x + s.len / 2}px ${s.y + 1.5}px` }}
-              />
-            ))}
+                {/* Candles (3D cylinders) */}
+                {CANDLES.map((cd,ci)=>(
+                  <motion.g key={cd.x}
+                    initial={{ opacity:0, y:-14 }}
+                    animate={{ opacity:1, y:0 }}
+                    transition={{ delay:0.55+ci*0.18, type:"spring", stiffness:280 }}
+                  >
+                    {/* Candle body */}
+                    <path
+                      d={`M ${cd.x-4},28 L ${cd.x-4},64 A 4,0.9 0 0,0 ${cd.x+4},64 L ${cd.x+4},28 Z`}
+                      fill={cd.c}
+                    />
+                    {/* Lighting overlay on candle body */}
+                    <path
+                      d={`M ${cd.x-4},28 L ${cd.x-4},64 A 4,0.9 0 0,0 ${cd.x+4},64 L ${cd.x+4},28 Z`}
+                      fill="url(#cndLit)"
+                    />
+                    {/* Highlight stripe */}
+                    <rect x={cd.x-2} y="32" width="1.5" height="26" rx="0.75" fill="rgba(255,255,255,0.38)"/>
+                    {/* Top face ellipse (3D cap) */}
+                    <ellipse cx={cd.x} cy="28" rx="4" ry="0.9"
+                      fill={cd.c} style={{ filter:"brightness(1.4)" }}/>
+                    {/* Wax melt ring at top edge */}
+                    <ellipse cx={cd.x} cy="28" rx="4.5" ry="1.1"
+                      fill="rgba(255,255,255,0.18)"/>
+                    {/* Wick */}
+                    <line x1={cd.x} y1="21" x2={cd.x} y2="28"
+                      stroke="#2e2020" strokeWidth="1.3" strokeLinecap="round"/>
+
+                    {/* Flame */}
+                    <motion.g
+                      style={{ transformOrigin:`${cd.x}px 14px` }}
+                      animate={{
+                        scaleX:[1,0.68,1.28,0.82,1.08,1],
+                        scaleY:[1,1.32,0.72,1.22,0.88,1],
+                      }}
+                      transition={{ duration:0.88, repeat:Infinity, ease:"easeInOut", delay:ci*0.14 }}
+                    >
+                      {/* Outer glow halo */}
+                      <ellipse cx={cd.x} cy="14" rx="7" ry="13" fill="#ff7010" opacity="0.22" filter="url(#fg)"/>
+                      {/* Main flame */}
+                      <ellipse cx={cd.x} cy="14" rx="4.5" ry="9" fill="url(#flame)"/>
+                      {/* Hot inner core */}
+                      <ellipse cx={cd.x} cy="16" rx="2" ry="4.5" fill="#fff9c4" opacity="0.96"/>
+                      {/* Bright tip */}
+                      <circle cx={cd.x} cy={9} r="1.2" fill="#ffffff" opacity="0.8"/>
+                    </motion.g>
+                  </motion.g>
+                ))}
+
+                {/* Sprinkles scattered over all layers */}
+                {sprinkles.map((s,si)=>(
+                  <motion.rect key={s.id}
+                    x={s.x} y={s.y} width={s.len} height="3" rx="1.5"
+                    fill={s.color}
+                    transform={`rotate(${s.rot} ${s.x+s.len/2} ${s.y+1.5})`}
+                    initial={{ opacity:0, scale:0 }}
+                    animate={{ opacity:0.93, scale:1 }}
+                    transition={{ delay:si*0.022, type:"spring", stiffness:340, damping:20 }}
+                    style={{ transformOrigin:`${s.x+s.len/2}px ${s.y+1.5}px` }}
+                  />
+                ))}
+              </motion.g>
+            )}
           </motion.g>
         )}
       </AnimatePresence>
 
-      {/* Phase label */}
+      {/* ── Phase caption ── */}
       <AnimatePresence mode="wait">
-        {phase === 1 && (
-          <motion.text key="l1" x="100" y="255" textAnchor="middle" fontSize="10"
-            fill="#00beff" opacity="0.7" fontFamily="sans-serif"
-            initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >Gathering ingredients…</motion.text>
-        )}
-        {phase === 2 && (
-          <motion.text key="l2" x="100" y="255" textAnchor="middle" fontSize="10"
-            fill="#00beff" opacity="0.7" fontFamily="sans-serif"
-            initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >Mixing the batter…</motion.text>
-        )}
-        {phase === 3 && (
-          <motion.text key="l3" x="100" y="255" textAnchor="middle" fontSize="10"
-            fill="#ff9a3c" opacity="0.8" fontFamily="sans-serif"
-            initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >Baking to perfection…</motion.text>
-        )}
-        {phase === 4 && (
-          <motion.text key="l4" x="100" y="255" textAnchor="middle" fontSize="10"
-            fill="#00beff" opacity="0.7" fontFamily="sans-serif"
-            initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >Stacking layers…</motion.text>
-        )}
-        {phase === 5 && (
-          <motion.text key="l5" x="100" y="255" textAnchor="middle" fontSize="10"
-            fill="#ffd93d" opacity="0.9" fontFamily="sans-serif"
-            initial={{ opacity: 0 }} animate={{ opacity: 0.9 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >Your dream cake is ready!</motion.text>
-        )}
+        {phase===1 && <motion.text key="p1" x="100" y="261" textAnchor="middle" fontSize="10"
+          fill="#a8d4ff" fontFamily="sans-serif"
+          initial={{opacity:0}} animate={{opacity:0.8}} exit={{opacity:0}} transition={{duration:0.35}}
+        >Gathering ingredients…</motion.text>}
+        {phase===2 && <motion.text key="p2" x="100" y="261" textAnchor="middle" fontSize="10"
+          fill="#a8d4ff" fontFamily="sans-serif"
+          initial={{opacity:0}} animate={{opacity:0.8}} exit={{opacity:0}} transition={{duration:0.35}}
+        >Mixing the batter…</motion.text>}
+        {phase===3 && <motion.text key="p3" x="100" y="261" textAnchor="middle" fontSize="10"
+          fill="#ffa050" fontFamily="sans-serif" fontWeight="bold"
+          initial={{opacity:0}} animate={{opacity:0.9}} exit={{opacity:0}} transition={{duration:0.35}}
+        >Baking to perfection…</motion.text>}
+        {phase===4 && <motion.text key="p4" x="100" y="261" textAnchor="middle" fontSize="10"
+          fill="#a8d4ff" fontFamily="sans-serif"
+          initial={{opacity:0}} animate={{opacity:0.8}} exit={{opacity:0}} transition={{duration:0.35}}
+        >Assembling layers…</motion.text>}
+        {phase===5 && <motion.text key="p5" x="100" y="261" textAnchor="middle" fontSize="10"
+          fill="#ffd93d" fontFamily="sans-serif" fontWeight="bold"
+          initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.35}}
+        >Your dream cake is ready!</motion.text>}
       </AnimatePresence>
     </svg>
   );
