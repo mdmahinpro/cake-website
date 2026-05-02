@@ -1,0 +1,123 @@
+Finalize the project for deployment. Add PWA support and build configuration.
+
+PWA SETUP:
+Install: npm install vite-plugin-pwa
+
+Update vite.config.js:
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'Sweet Dreams Cakes',
+        short_name: 'CakeShop',
+        description: 'Custom handcrafted cakes for every occasion',
+        theme_color: '#d4a574',
+        background_color: '#1a0a00',
+        display: 'standalone',
+        start_url: '/',
+        icons: [
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      },
+    }),
+  ],
+  base: '/',
+  build: { outDir: 'dist', sourcemap: false },
+})
+
+Create public/icon-192.png and public/icon-512.png:
+Create src/utils/generateIcon.js with canvas code that draws a cake emoji (🎂) on a #d4a574 colored circular background. Run it once to generate both icons and save to public/ folder. The icons should be simple: colored circle background with the emoji centered.
+
+Actually, create simple placeholder PNG icons using this approach:
+- Create a small Node.js script that uses canvas or just creates a simple colored square PNG
+- OR use a simple approach: create the icons as simple colored rectangles with the letter 'C' in white
+
+Simplest approach: Use the existing public folder and create a generateIcons.js script that can be run with node to create the PNGs. Then run it.
+
+404 PAGE src/pages/NotFoundPage.jsx:
+- Same dark theme
+- 🍰 emoji large (text-8xl)
+- "404" Playfair Display text-8xl font-black text-gradient
+- "Page Not Found" section-title
+- "But our cakes are always found!" text-caramel-300
+- "Back to Home" btn-primary
+- Funny subtitle in Dancing Script: "Looks like this page got eaten..."
+- framer-motion scaleIn animation
+
+SEO - Update index.html:
+<title>Sweet Dreams Cakes | Custom Handcrafted Cakes</title>
+<meta name="description" content="Order custom cakes for birthdays, weddings, and every occasion. Handcrafted with love.">
+<meta property="og:title" content="Sweet Dreams Cakes">
+<meta property="og:description" content="Custom cakes made with love for every occasion">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#d4a574">
+<link rel="canonical" href="/">
+
+Create .env.example file:
+VITE_ADMIN_PASSWORD=yoursecurepasswordhere
+
+Create netlify.toml for Netlify deployment:
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+Create vercel.json for Vercel deployment:
+{
+  "rewrites": [{ "source": "/:path*", "destination": "/index.html" }]
+}
+
+Create public/.htaccess for Hostinger shared hosting:
+Options -MultiViews
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.html [QSA,L]
+
+Create README.md:
+# Sweet Dreams Cake Website
+
+## Quick Deploy
+
+### Vercel (Free, Recommended)
+1. Push to GitHub
+2. Connect repo to vercel.com
+3. Add environment variable: VITE_ADMIN_PASSWORD=yourpassword
+4. Deploy - done!
+
+### Netlify (Free)
+1. npm run build
+2. Drag dist folder to netlify.com/drop
+3. Add env variable in site settings
+
+### Hostinger Shared Hosting
+1. npm run build on your computer
+2. Upload ALL contents of dist folder to public_html
+3. Upload .htaccess to public_html
+4. Done! Visit your domain.
+
+## Admin Panel
+- URL: yourdomain.com/control
+- Password: set VITE_ADMIN_PASSWORD environment variable
+
+## First Time Setup
+1. Visit /control, login
+2. Go to Settings - update shop name, WhatsApp number, Facebook page
+3. Delete demo gallery items
+4. Add your real cake photos
+5. Toggle WhatsApp/Facebook as preferred order channel
+
+Built by TECHELY
