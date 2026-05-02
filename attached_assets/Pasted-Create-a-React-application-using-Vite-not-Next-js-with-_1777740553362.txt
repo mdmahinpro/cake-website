@@ -1,0 +1,155 @@
+Create a React application using Vite (not Next.js) with the following setup. This must build to pure static files (npm run build -> dist folder) that can be uploaded directly to Hostinger shared hosting or Vercel/Netlify for free.
+
+SETUP COMMANDS
+- Use: npm create vite@latest . -- --template react
+- Install dependencies: npm install react-router-dom framer-motion react-icons
+- npm install -D tailwindcss postcss autoprefixer
+- npx tailwindcss init -p
+
+VITE CONFIG vite.config.js:
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+export default defineConfig({
+  plugins: [react()],
+  base: '/',
+  build: { outDir: 'dist' }
+})
+
+TAILWIND CONFIG tailwind.config.js:
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html','./src/**/*.{js,jsx}'],
+  theme: {
+    extend: {
+      colors: {
+        caramel: { 50:'#fdf6ec',100:'#f9e8cc',200:'#f0d5b0',300:'#e8c4a0',400:'#d4a574',500:'#c49060',600:'#b8864e',700:'#9a6e3a',800:'#7a5228',900:'#5a3a18' },
+        choco: { 50:'#fdf0e8',100:'#f5d5b8',200:'#e8b890',300:'#d49060',400:'#8b4513',500:'#6b3410',600:'#4d240a',700:'#3d1c08',800:'#2d1600',900:'#1a0a00' },
+        rose: { cake:'#f4a7b9', light:'#fce4ec', dark:'#e91e8c' },
+        cream: '#fef9f0',
+      },
+      fontFamily: {
+        playfair: ['Playfair Display', 'serif'],
+        poppins: ['Poppins', 'sans-serif'],
+        dancing: ['Dancing Script', 'cursive'],
+      },
+      animation: {
+        'float': 'float 4s ease-in-out infinite',
+        'float-slow': 'float 6s ease-in-out infinite',
+        'sparkle': 'sparkle 2s ease-in-out infinite',
+        'shimmer': 'shimmer 3s linear infinite',
+        'fade-up': 'fadeUp 0.7s ease forwards',
+        'scale-in': 'scaleIn 0.5s ease forwards',
+        'slide-left': 'slideLeft 0.6s ease forwards',
+        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'bounce-slow': 'bounceSlow 2s ease-in-out infinite',
+        'spin-slow': 'spin 8s linear infinite',
+        'gradient': 'gradientShift 6s ease infinite',
+        'wiggle': 'wiggle 1s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite',
+      },
+      keyframes: {
+        float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-18px)' } },
+        sparkle: { '0%,100%': { opacity: '0', transform: 'scale(0) rotate(0deg)' }, '50%': { opacity: '1', transform: 'scale(1) rotate(180deg)' } },
+        shimmer: { '0%': { backgroundPosition: '-200% center' }, '100%': { backgroundPosition: '200% center' } },
+        fadeUp: { from: { opacity: '0', transform: 'translateY(40px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        scaleIn: { from: { opacity: '0', transform: 'scale(0.7)' }, to: { opacity: '1', transform: 'scale(1)' } },
+        slideLeft: { from: { opacity: '0', transform: 'translateX(-50px)' }, to: { opacity: '1', transform: 'translateX(0)' } },
+        pulseSoft: { '0%,100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.04)' } },
+        bounceSlow: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+        gradientShift: { '0%,100%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' } },
+        wiggle: { '0%,100%': { transform: 'rotate(-3deg)' }, '50%': { transform: 'rotate(3deg)' } },
+        glow: { '0%,100%': { boxShadow: '0 0 20px rgba(212,165,116,0.3)' }, '50%': { boxShadow: '0 0 50px rgba(212,165,116,0.7)' } },
+      },
+      backgroundSize: { '300%': '300%' },
+      backdropBlur: { xs: '2px' },
+    },
+  },
+  plugins: [],
+}
+
+INDEX.HTML - Add Google Fonts to <head>:
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#d4a574">
+
+GLOBAL CSS src/index.css:
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Poppins', sans-serif; background-color: #1a0a00; color: #fff8f0; overflow-x: hidden; box-sizing: border-box; }
+  img { max-width: 100%; display: block; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1a0a00; }
+  ::-webkit-scrollbar-thumb { background: #d4a574; border-radius: 3px; }
+  ::selection { background: rgba(212,165,116,0.4); color: #fff8f0; }
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .btn-primary { @apply bg-gradient-to-r from-caramel-400 to-caramel-600 text-white font-semibold px-6 py-3 rounded-full hover:from-caramel-500 hover:to-caramel-700 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-caramel-900/40 cursor-pointer select-none; }
+  .btn-outline { @apply border-2 border-caramel-400 text-caramel-400 font-semibold px-6 py-3 rounded-full hover:bg-caramel-400 hover:text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer select-none; }
+  .card-glass { @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl shadow-2xl shadow-black/40; }
+  .card-dark { @apply bg-choco-800 border border-caramel-800/30 rounded-3xl shadow-xl shadow-black/30; }
+  .text-gradient { @apply bg-gradient-to-r from-caramel-300 via-rose-cake to-caramel-400 bg-clip-text text-transparent bg-[length:300%_auto] animate-shimmer; }
+  .section-title { @apply font-playfair text-3xl md:text-5xl font-bold text-white; }
+  .section-subtitle { @apply font-dancing text-xl md:text-2xl text-caramel-300; }
+  .input-dark { @apply w-full bg-choco-900/80 border border-caramel-800/50 rounded-xl px-4 py-3 text-white placeholder-choco-300 focus:outline-none focus:border-caramel-400 focus:ring-1 focus:ring-caramel-400 transition-all duration-200; }
+}
+
+DATA STORE src/store/useStore.js:
+Create a React Context + useReducer store for all app data.
+Store shape:
+{
+  settings: {
+    shopName: 'Sweet Dreams Cakes',
+    tagline: 'Every cake tells a story of love',
+    heroTitle: 'Your Dream Cake Starts Here',
+    heroSubtitle: 'Handcrafted custom cakes for every occasion',
+    whatsappNumber: '8801700000000',
+    facebookPageUrl: 'https://facebook.com/yourpage',
+    orderChannel: 'whatsapp',
+    instagramUrl: '',
+    youtubeChannelUrl: '',
+    accentColor: '#d4a574',
+  },
+  gallery: [], // array of cake items
+  carousel: [], // array of hero carousel slides
+  isAuthenticated: false
+}
+Persist to localStorage on every state change (useEffect on state). Load from localStorage on init, fall back to defaults. Export useStore hook and StoreProvider component.
+
+APP ROUTER src/App.jsx:
+import BrowserRouter, Routes, Route from react-router-dom
+Routes:
+- / -> HomePage
+- /gallery -> GalleryPage
+- /control -> AdminPage (password protected)
+- * -> NotFoundPage
+
+PASSWORD: read from import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
+AdminPage checks sessionStorage for 'cakeauth' === 'true' before rendering. If not authenticated render AdminLogin component instead.
+
+Create src/hooks/useIntersection.js: Custom hook that returns [ref, isVisible] boolean. Uses IntersectionObserver, triggers once (unobserves after visible). Used for scroll animations throughout.
+
+Create src/utils/order.js:
+export function buildWhatsAppUrl(number, caption, category) {
+  const msg = encodeURIComponent(`Cake Order Request!\n\nI want to order a cake.\nCake: ${caption}\nCategory: ${category || 'Custom'}\n\nPlease let me know the price and availability. Thank you!`);
+  return `https://wa.me/${number}?text=${msg}`;
+}
+export function buildFacebookUrl(pageUrl, caption) {
+  const pageName = pageUrl.replace(/https?:\/\/(www\.)?facebook\.com\//, '').replace(/\/$/, '');
+  return `https://m.me/${pageName}`;
+}
+export function openOrderChannel(settings, caption, category) {
+  if (settings.orderChannel === 'whatsapp') {
+    window.open(buildWhatsAppUrl(settings.whatsappNumber, caption, category), '_blank');
+  } else {
+    window.open(buildFacebookUrl(settings.facebookPageUrl, caption), '_blank');
+  }
+}
+
+Do NOT build any pages yet. Only complete the project setup, Tailwind, store, router, and utilities.
