@@ -44,13 +44,15 @@ export default function CategorySection() {
 
   function countInCategory(slug: string) {
     return gallery.filter(
-      (item) => item.category.toLowerCase() === slug.toLowerCase()
+      (item) => item.category.toLowerCase().startsWith(slug.toLowerCase())
     ).length;
   }
 
   function coverImage(slug: string) {
     return gallery.find(
-      (item) => item.category.toLowerCase() === slug.toLowerCase() && item.imageUrl
+      (item) =>
+        item.category.toLowerCase().startsWith(slug.toLowerCase()) &&
+        item.imageUrl
     )?.imageUrl;
   }
 

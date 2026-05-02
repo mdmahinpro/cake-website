@@ -120,8 +120,7 @@
   ::-webkit-scrollbar-track { background: #1a0a00; }
   ::-webkit-scrollbar-thumb { background: #d4a574; border-radius: 3px; }
   ::selection { background: rgba(212,165,116,0.4); color: #fff8f0; }
-  -webkit-tap-highlight-color: transparent;
-  * { box-sizing: border-box; max-width: 100%; }
+  * { box-sizing: border-box; max-width: 100%; -webkit-tap-highlight-color: transparent; }
 }
 
 @layer components {

@@ -1,0 +1,64 @@
+Do a complete integration test and fix any issues. Go through this checklist and fix ALL problems found:
+
+HOMEPAGE TESTS:
+1. Hero loads with animations, sparkles visible
+2. All framer-motion animations trigger on scroll
+3. Category section shows 4 category cards with cake images
+4. Featured carousel auto-plays and manual prev/next works
+5. Delivered section shows delivered items in masonry
+6. How to order steps animate in with stagger
+7. CTA section both buttons work
+8. Floating order button visible bottom-right
+9. Footer links work
+
+GALLERY PAGE TESTS:
+10. All 12 demo items show in masonry grid
+11. Filter pills filter correctly
+12. Search filters in real-time
+13. Clicking image opens lightbox
+14. Lightbox shows correct image and caption
+15. Lightbox swipe works on mobile (simulate touch events)
+16. Lightbox keyboard navigation works (Escape, ArrowLeft, ArrowRight)
+17. YouTube badge appears on items with video
+18. "Watch Making Video" button opens YouTube
+19. Order button on each card works (WhatsApp/FB)
+20. Load more button loads 12 more
+21. Empty state shows when no results
+
+ADMIN PANEL TESTS:
+22. /control redirects to login if not authenticated
+23. Wrong password shows shake animation
+24. Correct password (admin123) logs in
+25. All 5 admin sections navigate correctly
+26. Add gallery item with URL works
+27. File upload converts to base64 and saves
+28. Edit item populates form correctly
+29. Delete shows confirmation and removes item
+30. Featured toggle saves and reflects in homepage carousel
+31. WhatsApp/Facebook toggle slides with animation
+32. Toggle change reflects on all order buttons immediately
+33. Settings save persists after page refresh
+34. Logout clears session
+
+MOBILE TESTS (simulate 375px):
+35. No horizontal overflow on any page
+36. Navbar hamburger opens full-screen menu
+37. All touch targets are 44px minimum
+38. Gallery is exactly 2 columns
+39. Lightbox closes on tap outside image
+40. Admin sidebar works as drawer
+41. All form inputs are full-width
+42. No text is too small to read
+
+Fix ALL issues found. After fixing, ensure:
+- npm run build completes with no errors
+- dist folder contains all files
+- .htaccess is in public folder so it gets copied to dist
+
+Run npm run build and verify it succeeds. Show the build output.
+
+Final output message when done:
+"Cake website is complete and ready to deploy!
+Build: npm run build -> uploads dist folder to hosting
+Admin: /control (password set via VITE_ADMIN_PASSWORD in .env)
+Demo data: 12 cake items pre-loaded for preview"

@@ -11,6 +11,16 @@ const CATEGORIES = [
   { slug: "delivered", label: "Delivered Orders" },
 ];
 
+/** Checks whether a gallery item matches a filter slug */
+export function matchesFilter(
+  item: { category: string; type?: string },
+  slug: string
+): boolean {
+  if (slug === "all") return true;
+  if (slug === "delivered") return item.type === "delivered";
+  return item.category.toLowerCase().startsWith(slug.toLowerCase());
+}
+
 interface FilterBarProps {
   activeFilter: string;
   onFilterChange: (slug: string) => void;
@@ -22,11 +32,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
 
   function countForSlug(slug: string) {
     if (slug === "all") return gallery.length;
-    return gallery.filter(
-      (item) =>
-        item.category.toLowerCase() === slug ||
-        item.type?.toLowerCase() === slug
-    ).length;
+    return gallery.filter((item) => matchesFilter(item, slug)).length;
   }
 
   return (
@@ -40,7 +46,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
               <button
                 key={cat.slug}
                 onClick={() => onFilterChange(cat.slug)}
-                className={`flex-shrink-0 flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex-shrink-0 flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap min-h-[44px] ${
                   isActive
                     ? "bg-caramel-400 text-white shadow-lg"
                     : "border border-caramel-700/50 text-caramel-300 hover:border-caramel-400"

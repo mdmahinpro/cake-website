@@ -5,7 +5,7 @@ import Navbar from "../components/shared/Navbar";
 import Footer from "../components/shared/Footer";
 import FloatingOrderButton from "../components/shared/FloatingOrderButton";
 import GalleryHero from "../components/gallery/GalleryHero";
-import FilterBar from "../components/gallery/FilterBar";
+import FilterBar, { matchesFilter } from "../components/gallery/FilterBar";
 import SearchBar from "../components/gallery/SearchBar";
 import GalleryGrid from "../components/gallery/GalleryGrid";
 import Lightbox from "../components/gallery/Lightbox";
@@ -34,11 +34,7 @@ export default function GalleryPage() {
   const filteredItems = useMemo(() => {
     let items = gallery;
     if (activeFilter !== "all") {
-      items = items.filter(
-        (item) =>
-          item.category.toLowerCase() === activeFilter.toLowerCase() ||
-          item.type?.toLowerCase() === activeFilter.toLowerCase()
-      );
+      items = items.filter((item) => matchesFilter(item, activeFilter));
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();

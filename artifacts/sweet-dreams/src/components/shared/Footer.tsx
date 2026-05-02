@@ -49,7 +49,7 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎂</span>
-              <span className="font-dancing text-2xl font-bold bg-gradient-to-r from-caramel-300 to-rose-cake bg-clip-text text-transparent">
+              <span className="font-dancing text-2xl font-bold text-gradient">
                 {settings.shopName}
               </span>
             </div>
