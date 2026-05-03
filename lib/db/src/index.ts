@@ -15,7 +15,7 @@ export function getDb() {
         "DATABASE_URL must be set. Did you forget to provision a database?",
       );
     }
-    _pool = new Pool({ connectionString: url });
+    _pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } });
     _db = drizzle(_pool, { schema });
   }
   return _db;
