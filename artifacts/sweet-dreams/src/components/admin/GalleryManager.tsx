@@ -1,16 +1,14 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdEdit, MdDelete, MdCheckCircle, MdClose } from "react-icons/md";
+import { MdEdit, MdDelete, MdCheckCircle, MdClose, MdPhoto } from "react-icons/md";
 import { useStore, type CakeItem } from "../../store/useStore";
 
-const CATEGORIES = [
-  "Chocolate",
-  "Vanilla",
-  "Custom",
-  "Wedding",
-  "Birthday",
-  "Others",
-];
+const CATEGORIES = ["Chocolate","Vanilla","Custom","Wedding","Birthday","Others"];
+
+const CARD = { background: "rgba(3,21,37,0.85)", border: "1px solid rgba(0,190,255,0.16)" } as const;
+const BORDER_B = { borderColor: "rgba(0,190,255,0.14)" };
+const LBL = { color: "#4dd9ff" } as const;
+const HINT = { color: "#2a6eb5" } as const;
 
 interface FormState {
   imageSource: "upload" | "url";
@@ -25,34 +23,26 @@ interface FormState {
 }
 
 const DEFAULT_FORM: FormState = {
-  imageSource: "upload",
-  imageUrl: "",
-  imageBase64: "",
-  caption: "",
-  category: "Chocolate",
-  type: "gallery",
-  featured: false,
-  youtubeUrl: "",
-  review: "",
+  imageSource: "upload", imageUrl: "", imageBase64: "",
+  caption: "", category: "Chocolate", type: "gallery",
+  featured: false, youtubeUrl: "", review: "",
 };
 
-interface GalleryManagerProps {
-  filterDelivered?: boolean;
-}
+interface GalleryManagerProps { filterDelivered?: boolean; }
 
 export default function GalleryManager({ filterDelivered = false }: GalleryManagerProps) {
   const { state, dispatch } = useStore();
   const { gallery } = state;
 
-  const [form, setForm] = useState<FormState>({ ...DEFAULT_FORM });
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [form, setForm]             = useState<FormState>({ ...DEFAULT_FORM });
+  const [editingId, setEditingId]   = useState<string | null>(null);
+  const [saved, setSaved]           = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "gallery" | "delivered">("all");
-  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab]   = useState<"all" | "gallery" | "delivered">("all");
+  const [search, setSearch]         = useState("");
   const [urlTestImg, setUrlTestImg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLDivElement>(null);
+  const formRef      = useRef<HTMLDivElement>(null);
 
   const displayedItems = gallery.filter((item) => {
     if (filterDelivered) return item.type === "delivered";
@@ -80,7 +70,7 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
       canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
       setForm((f) => ({ ...f, imageBase64: canvas.toDataURL("image/jpeg", 0.75) }));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); };
+    img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
   }
 
@@ -102,16 +92,10 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
       review:   form.type === "delivered" && form.review.trim() ? form.review.trim() : undefined,
       ...(form.youtubeUrl ? { youtubeUrl: form.youtubeUrl } : {}),
     } as CakeItem;
-
-    if (editingId) {
-      dispatch({ type: "UPDATE_GALLERY_ITEM", payload: item });
-    } else {
-      dispatch({ type: "ADD_GALLERY_ITEM", payload: item });
-    }
-    setForm({ ...DEFAULT_FORM });
-    setEditingId(null);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if (editingId) { dispatch({ type: "UPDATE_GALLERY_ITEM", payload: item }); }
+    else           { dispatch({ type: "ADD_GALLERY_ITEM", payload: item }); }
+    setForm({ ...DEFAULT_FORM }); setEditingId(null);
+    setSaved(true); setTimeout(() => setSaved(false), 2000);
   }
 
   function handleEdit(item: CakeItem) {
@@ -121,12 +105,10 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
       imageSource: item.imageUrl.startsWith("data:") ? "upload" : "url",
       imageUrl:    item.imageUrl.startsWith("data:") ? "" : item.imageUrl,
       imageBase64: item.imageUrl.startsWith("data:") ? item.imageUrl : "",
-      caption:  item.caption,
-      category: item.category,
-      type:     item.type === "delivered" ? "delivered" : "gallery",
+      caption: item.caption, category: item.category,
+      type:    item.type === "delivered" ? "delivered" : "gallery",
       featured: item.featured || false,
-      youtubeUrl: ext.youtubeUrl || "",
-      review:   item.review || "",
+      youtubeUrl: ext.youtubeUrl || "", review: item.review || "",
     });
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   }
@@ -136,84 +118,101 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
     setDeleteTarget(null);
   }
 
-  const title = filterDelivered ? "Add Delivered Order" : editingId ? "Edit Cake" : "Add New Cake";
+  const formTitle = filterDelivered ? "Add Delivered Order" : editingId ? "Edit Cake" : "Add New Cake";
 
   return (
-    <div className="max-w-5xl mx-auto flex flex-col gap-6">
+    <div className="max-w-5xl mx-auto flex flex-col gap-5">
+      {/* Info banner */}
       {filterDelivered && (
-        <div className="bg-caramel-400/10 border border-caramel-400/30 rounded-2xl p-4 text-sm text-caramel-300">
-          📦 These appear in the <strong>"Delivered With Love"</strong> section on the homepage (max 6 shown).
-          Add a customer review to make each delivery card more personal!
+        <div className="rounded-2xl p-4 text-sm" style={{ background: "rgba(0,190,255,0.06)", border: "1px solid rgba(0,190,255,0.18)", color: "#4dd9ff" }}>
+          These appear in the <strong className="text-white">"Delivered With Love"</strong> section on the homepage (max 6 shown).
+          Add a customer review to make each delivery card more personal.
         </div>
       )}
 
       {/* ADD / EDIT FORM */}
-      <div ref={formRef} className="card-dark p-6 rounded-3xl">
-        <h2 className="font-playfair text-xl font-bold text-white mb-5">{title}</h2>
+      <div ref={formRef} className="rounded-2xl p-5 flex flex-col gap-4" style={CARD}>
+        <h2 className="font-playfair text-lg font-bold text-white border-b pb-3" style={BORDER_B}>{formTitle}</h2>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1 flex flex-col gap-4">
-              {/* Image source */}
+
+              {/* Image source tabs */}
               <div>
                 <div className="flex gap-2 mb-3">
                   {(["upload", "url"] as const).map((tab) => (
                     <button key={tab} type="button"
                       onClick={() => setForm((f) => ({ ...f, imageSource: tab }))}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${form.imageSource === tab ? "bg-caramel-400 text-white" : "border border-caramel-700/50 text-caramel-300"}`}>
+                      className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                      style={form.imageSource === tab
+                        ? { background: "#00beff", color: "#010d1e" }
+                        : { border: "1px solid rgba(0,190,255,0.25)", color: "#4dd9ff" }}>
                       {tab === "upload" ? "Upload File" : "Image URL"}
                     </button>
                   ))}
                 </div>
                 {form.imageSource === "upload" ? (
-                  <div className="border-2 border-dashed border-caramel-700/50 rounded-2xl p-6 text-center cursor-pointer hover:border-caramel-400 transition-colors"
-                    onClick={() => fileInputRef.current?.click()} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+                  <div className="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors"
+                    style={{ borderColor: "rgba(0,190,255,0.25)" }}
+                    onClick={() => fileInputRef.current?.click()}
+                    onDrop={handleDrop}
+                    onDragOver={(e) => e.preventDefault()}>
                     {form.imageBase64 ? (
                       <img src={form.imageBase64} className="max-h-32 mx-auto rounded-xl object-contain" />
                     ) : (
-                      <><p className="text-3xl mb-2">📸</p>
-                        <p className="text-caramel-400 text-sm">Drag image here or click to browse</p>
-                        <p className="text-choco-300 text-xs mt-1">Max recommended size: 1.5MB</p></>
+                      <>
+                        <MdPhoto size={32} className="mx-auto mb-2" style={{ color: "rgba(0,190,255,0.35)" }} />
+                        <p className="text-sm" style={LBL}>Drag image here or click to browse</p>
+                        <p className="text-xs mt-1" style={HINT}>Compressed automatically for fast loading</p>
+                      </>
                     )}
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
                       onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <input type="url" value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                    <input type="url" value={form.imageUrl}
+                      onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
                       placeholder="https://..." className="input-dark flex-1" />
-                    <button type="button" onClick={() => setUrlTestImg(form.imageUrl)} className="btn-outline text-sm px-3 py-2 whitespace-nowrap">Test</button>
+                    <button type="button" onClick={() => setUrlTestImg(form.imageUrl)}
+                      className="btn-outline text-sm px-3 py-2 whitespace-nowrap">Test</button>
                   </div>
                 )}
               </div>
 
               {/* Caption */}
-              <div>
-                <label className="text-sm text-caramel-300 mb-1 block">Caption</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium" style={LBL}>Caption</label>
                 <div className="relative">
                   <textarea value={form.caption}
                     onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value.slice(0, 200) }))}
                     rows={3} className="input-dark resize-none" placeholder="Describe this cake..." />
-                  <span className="absolute bottom-2 right-3 text-xs text-choco-300">{form.caption.length}/200</span>
+                  <span className="absolute bottom-2 right-3 text-xs" style={HINT}>{form.caption.length}/200</span>
                 </div>
               </div>
 
               {/* Category */}
-              <div>
-                <label className="text-sm text-caramel-300 mb-1 block">Category</label>
-                <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="input-dark">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium" style={LBL}>Category</label>
+                <select value={form.category}
+                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                  className="input-dark">
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               {/* Type */}
               {!filterDelivered && (
-                <div>
-                  <label className="text-sm text-caramel-300 mb-2 block">Type</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium" style={LBL}>Type</label>
                   <div className="flex gap-2">
                     {(["gallery", "delivered"] as const).map((t) => (
                       <button key={t} type="button"
                         onClick={() => setForm((f) => ({ ...f, type: t }))}
-                        className={`flex-1 py-2 rounded-full text-sm font-medium transition-all ${form.type === t ? "bg-caramel-400 text-white" : "border border-caramel-700/50 text-caramel-300"}`}>
+                        className="flex-1 py-2 rounded-full text-sm font-medium transition-all"
+                        style={form.type === t
+                          ? { background: "#00beff", color: "#010d1e" }
+                          : { border: "1px solid rgba(0,190,255,0.25)", color: "#4dd9ff" }}>
                         {t === "gallery" ? "Gallery Work" : "Delivered Order"}
                       </button>
                     ))}
@@ -221,15 +220,17 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
                 </div>
               )}
 
-              {/* Customer Review — only for delivered type */}
+              {/* Customer Review */}
               {(form.type === "delivered" || filterDelivered) && (
-                <div>
-                  <label className="text-sm text-caramel-300 mb-1 block">Customer Review <span className="text-xs text-choco-300">(optional — shown on homepage)</span></label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium" style={LBL}>
+                    Customer Review <span className="text-xs" style={HINT}>(optional)</span>
+                  </label>
                   <div className="relative">
                     <textarea value={form.review}
                       onChange={(e) => setForm((f) => ({ ...f, review: e.target.value.slice(0, 180) }))}
-                      rows={2} className="input-dark resize-none" placeholder="What did the customer say? e.g. Absolutely loved it!" />
-                    <span className="absolute bottom-2 right-3 text-xs text-choco-300">{form.review.length}/180</span>
+                      rows={2} className="input-dark resize-none" placeholder="What did the customer say?" />
+                    <span className="absolute bottom-2 right-3 text-xs" style={HINT}>{form.review.length}/180</span>
                   </div>
                 </div>
               )}
@@ -246,23 +247,21 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
                     border: `1.5px solid ${form.featured ? "#00beff" : "rgba(0,190,255,0.25)"}`,
                     transition: "background 0.25s, border-color 0.25s",
                   }}>
-                  <motion.span
-                    className="absolute rounded-full bg-white shadow"
+                  <motion.span className="absolute rounded-full bg-white shadow"
                     style={{ width: 16, height: 16, top: 2, left: 0 }}
                     animate={{ x: form.featured ? 23 : 3 }}
-                    transition={{ type: "spring", stiffness: 600, damping: 38 }}
-                  />
+                    transition={{ type: "spring", stiffness: 600, damping: 38 }} />
                 </button>
-                <span className="text-sm text-caramel-300">Mark as Featured (shows in Featured Creations)</span>
+                <span className="text-sm" style={LBL}>Mark as Featured (shown in Featured Creations)</span>
               </div>
 
               {/* YouTube link */}
-              <div>
-                <label className="text-sm text-caramel-300 mb-1 block">YouTube Link (optional)</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium" style={LBL}>YouTube Link <span className="text-xs" style={HINT}>(optional)</span></label>
                 <input type="url" value={form.youtubeUrl}
                   onChange={(e) => setForm((f) => ({ ...f, youtubeUrl: e.target.value }))}
                   placeholder="https://youtube.com/watch?v=..." className="input-dark" />
-                <p className="text-xs text-choco-300 mt-1">Adds a "Watch Video" button in gallery lightbox</p>
+                <p className="text-xs" style={HINT}>Adds a "Watch Video" button in gallery lightbox</p>
               </div>
 
               {/* Submit */}
@@ -271,7 +270,7 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
                   <AnimatePresence mode="wait">
                     {saved ? (
                       <motion.span key="saved" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-2">
-                        <MdCheckCircle size={18} /> Saved!
+                        <MdCheckCircle size={18} /> Saved
                       </motion.span>
                     ) : (
                       <motion.span key="label" initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -281,27 +280,40 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
                   </AnimatePresence>
                 </motion.button>
                 {editingId && (
-                  <button type="button" onClick={() => { setEditingId(null); setForm({ ...DEFAULT_FORM }); }} className="btn-outline text-sm px-4">Cancel</button>
+                  <button type="button" onClick={() => { setEditingId(null); setForm({ ...DEFAULT_FORM }); }}
+                    className="btn-outline text-sm px-4">Cancel</button>
                 )}
               </div>
             </div>
 
             {/* Live preview */}
-            <div className="lg:w-56 flex flex-col gap-3">
-              <p className="text-sm text-caramel-300 font-medium">Live Preview</p>
-              <div className="rounded-2xl overflow-hidden bg-choco-800 border border-caramel-800/30">
-                <div className="aspect-square bg-choco-700 relative">
+            <div className="lg:w-52 flex flex-col gap-3">
+              <p className="text-sm font-medium" style={LBL}>Live Preview</p>
+              <div className="rounded-2xl overflow-hidden" style={{ background: "#051e36", border: "1px solid rgba(0,190,255,0.14)" }}>
+                <div className="aspect-square relative" style={{ background: "#031525" }}>
                   {(finalImage || urlTestImg) ? (
                     <img src={finalImage || urlTestImg || ""} className="w-full h-full object-cover" alt="preview" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl text-choco-500">🎂</div>
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MdPhoto size={40} style={{ color: "rgba(0,190,255,0.2)" }} />
+                    </div>
                   )}
-                  {form.category && <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs bg-caramel-400/90 text-white">{form.category}</span>}
-                  {form.featured && <span className="absolute top-2 right-2 text-sm">⭐</span>}
+                  {form.category && (
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs text-white"
+                      style={{ background: "#00beff", color: "#010d1e", fontWeight: 600 }}>
+                      {form.category}
+                    </span>
+                  )}
+                  {form.featured && (
+                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      style={{ background: "rgba(0,190,255,0.2)", color: "#00beff", border: "1px solid rgba(0,190,255,0.4)" }}>
+                      Featured
+                    </span>
+                  )}
                 </div>
                 <div className="p-3">
                   <p className="text-xs text-white line-clamp-2">{form.caption || "Your caption will appear here..."}</p>
-                  {form.review && <p className="text-xs text-caramel-400 italic mt-1 line-clamp-1">"{form.review}"</p>}
+                  {form.review && <p className="text-xs italic mt-1 line-clamp-1" style={{ color: "#4dd9ff" }}>"{form.review}"</p>}
                 </div>
               </div>
             </div>
@@ -310,55 +322,69 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
       </div>
 
       {/* EXISTING ITEMS */}
-      <div className="card-dark p-6 rounded-3xl">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
-          <h2 className="font-playfair text-xl font-bold text-white flex-1">
+      <div className="rounded-2xl p-5 flex flex-col gap-4" style={CARD}>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-b pb-4" style={BORDER_B}>
+          <h2 className="font-playfair text-lg font-bold text-white flex-1">
             {filterDelivered ? "Delivered Orders" : "Gallery Items"}
           </h2>
           <div className="flex items-center gap-2 flex-wrap">
             {!filterDelivered && (
-              <>
-                {(["all", "gallery", "delivered"] as const).map((t) => (
-                  <button key={t} onClick={() => setActiveTab(t)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${activeTab === t ? "bg-caramel-400 text-white" : "border border-caramel-700/50 text-caramel-300"}`}>
-                    {t}
-                  </button>
-                ))}
-              </>
+              (["all", "gallery", "delivered"] as const).map((t) => (
+                <button key={t} onClick={() => setActiveTab(t)}
+                  className="px-3 py-1 rounded-full text-xs font-medium capitalize transition-all"
+                  style={activeTab === t
+                    ? { background: "#00beff", color: "#010d1e" }
+                    : { border: "1px solid rgba(0,190,255,0.25)", color: "#4dd9ff" }}>
+                  {t}
+                </button>
+              ))
             )}
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..." className="input-dark py-1.5 text-sm w-32" />
+              placeholder="Search..." className="input-dark py-1.5 text-sm w-28" />
           </div>
         </div>
-        <p className="text-xs text-choco-300 mb-4">Showing {displayedItems.length} item{displayedItems.length !== 1 ? "s" : ""}</p>
+        <p className="text-xs" style={HINT}>Showing {displayedItems.length} item{displayedItems.length !== 1 ? "s" : ""}</p>
 
         {displayedItems.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-4xl mb-2">🎂</p>
-            <p className="text-choco-300 text-sm">No items found</p>
+            <MdPhoto size={36} className="mx-auto mb-2" style={{ color: "rgba(0,190,255,0.2)" }} />
+            <p className="text-sm" style={HINT}>No items found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {displayedItems.map((item) => (
-              <div key={item.id} className="rounded-2xl overflow-hidden relative bg-choco-700">
+              <div key={item.id} className="rounded-2xl overflow-hidden relative" style={{ background: "#031525", border: "1px solid rgba(0,190,255,0.1)" }}>
                 <div className="aspect-square relative">
                   {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.caption} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">🎂</div>
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MdPhoto size={28} style={{ color: "rgba(0,190,255,0.2)" }} />
+                    </div>
                   )}
-                  <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-caramel-400/90 text-white leading-none">{item.category}</span>
-                  {item.featured && <span className="absolute top-1.5 left-1.5 text-xs">⭐</span>}
+                  <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none"
+                    style={{ background: "#00beff", color: "#010d1e" }}>{item.category}</span>
+                  {item.featured && (
+                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none"
+                      style={{ background: "rgba(0,190,255,0.2)", color: "#00beff", border: "1px solid rgba(0,190,255,0.4)" }}>
+                      Featured
+                    </span>
+                  )}
                   {(item as CakeItem & { youtubeUrl?: string }).youtubeUrl && (
                     <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-red-600/90 text-white leading-none">Video</span>
                   )}
-                  {item.review && <span className="absolute bottom-1.5 right-1.5 text-xs">💬</span>}
+                  {item.review && (
+                    <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] leading-none"
+                      style={{ background: "rgba(0,190,255,0.15)", color: "#4dd9ff", border: "1px solid rgba(0,190,255,0.3)" }}>
+                      Review
+                    </span>
+                  )}
                 </div>
-                <div className="bg-choco-800 p-2 flex items-center justify-between gap-1">
+                <div className="p-2 flex items-center justify-between gap-1" style={{ background: "#051e36" }}>
                   <p className="text-xs text-white truncate flex-1">{item.caption}</p>
                   <div className="flex gap-1 flex-shrink-0">
-                    <button onClick={() => handleEdit(item)} className="text-caramel-400 hover:text-caramel-300 p-1 transition-colors"><MdEdit size={16} /></button>
-                    <button onClick={() => setDeleteTarget(item.id)} className="text-red-400 hover:text-red-300 p-1 transition-colors"><MdDelete size={16} /></button>
+                    <button onClick={() => handleEdit(item)} className="p-1 transition-colors" style={{ color: "#4dd9ff" }}><MdEdit size={16} /></button>
+                    <button onClick={() => setDeleteTarget(item.id)} className="p-1 text-red-400 hover:text-red-300 transition-colors"><MdDelete size={16} /></button>
                   </div>
                 </div>
               </div>
@@ -367,21 +393,25 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
         )}
       </div>
 
-      {/* Delete confirmation */}
+      {/* Delete modal */}
       <AnimatePresence>
         {deleteTarget && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)" }}
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.85)" }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="card-dark p-6 rounded-3xl max-w-sm w-full"
+            <motion.div className="rounded-2xl p-6 max-w-sm w-full" style={CARD}
               initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }}>
               <div className="flex items-start justify-between mb-4">
-                <h3 className="font-playfair text-lg font-bold text-white">Delete this cake?</h3>
-                <button onClick={() => setDeleteTarget(null)} className="text-choco-300 hover:text-white"><MdClose size={20} /></button>
+                <h3 className="font-playfair text-lg font-bold text-white">Delete this item?</h3>
+                <button onClick={() => setDeleteTarget(null)} style={{ color: "#2a6eb5" }}><MdClose size={20} /></button>
               </div>
-              <p className="text-sm text-choco-300 mb-6">Are you sure? This action cannot be undone.</p>
+              <p className="text-sm mb-6" style={HINT}>This action cannot be undone.</p>
               <div className="flex gap-3">
                 <button onClick={() => setDeleteTarget(null)} className="btn-outline flex-1 text-sm py-2">Cancel</button>
-                <button onClick={() => handleDelete(deleteTarget)} className="flex-1 py-2 rounded-full text-sm font-semibold bg-red-600 hover:bg-red-500 text-white transition-colors">Delete</button>
+                <button onClick={() => handleDelete(deleteTarget)}
+                  className="flex-1 py-2 rounded-full text-sm font-semibold bg-red-600 hover:bg-red-500 text-white transition-colors">
+                  Delete
+                </button>
               </div>
             </motion.div>
           </motion.div>

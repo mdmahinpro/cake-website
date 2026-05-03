@@ -1,84 +1,106 @@
+import {
+  MdShoppingBag, MdCategory, MdPhoto, MdCheckCircle,
+  MdStar, MdViewCarousel, MdCalendarToday,
+} from "react-icons/md";
 import { useStore } from "../../store/useStore";
 import type { AdminPage } from "./AdminLayout";
 
-interface DashboardPageProps {
-  onNavigate: (page: AdminPage) => void;
-}
+const CARD = {
+  background: "rgba(3,21,37,0.85)",
+  border: "1px solid rgba(0,190,255,0.16)",
+} as const;
 
-function StatsCard({ value, label, icon }: { value: string | number; label: string; icon: string }) {
+interface StatCardProps { value: string | number; label: string; Icon: React.ElementType; }
+function StatCard({ value, label, Icon }: StatCardProps) {
   return (
-    <div className="card-dark p-5 rounded-2xl relative">
-      <div className="absolute top-4 right-4 text-2xl">{icon}</div>
-      <p className="text-3xl font-bold text-caramel-400 mb-1">{value}</p>
-      <p className="text-sm text-choco-300">{label}</p>
+    <div className="rounded-2xl p-4 flex flex-col gap-2" style={CARD}>
+      <div className="flex items-center justify-between">
+        <p className="text-2xl font-bold font-playfair" style={{ color: "#00beff" }}>{value}</p>
+        <Icon size={22} style={{ color: "rgba(0,190,255,0.4)" }} />
+      </div>
+      <p className="text-xs font-medium" style={{ color: "#2a6eb5" }}>{label}</p>
     </div>
   );
 }
 
-export default function DashboardPage({ onNavigate }: DashboardPageProps) {
+interface Props { onNavigate: (page: AdminPage) => void; }
+
+export default function DashboardPage({ onNavigate }: Props) {
   const { state } = useStore();
   const { gallery, carousel, categories, products } = state;
 
-  const delivered = gallery.filter((g) => g.type === "delivered").length;
-  const featured  = gallery.filter((g) => g.featured).length;
+  const delivered   = gallery.filter((g) => g.type === "delivered").length;
+  const featured    = gallery.filter((g) => g.featured).length;
   const lastUpdated = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const recent = [...gallery].reverse().slice(0, 5);
+  const recent      = [...gallery].reverse().slice(0, 5);
 
   return (
-    <div className="max-w-5xl mx-auto flex flex-col gap-6">
-      <div>
-        <h2 className="font-playfair text-2xl font-bold text-white mb-1">Welcome back! 🎂</h2>
-        <p className="text-choco-300 text-sm">Here's an overview of your cake shop.</p>
+    <div className="max-w-5xl mx-auto flex flex-col gap-5">
+      {/* Header */}
+      <div className="rounded-2xl p-5" style={CARD}>
+        <h2 className="font-playfair text-xl font-bold text-white mb-1">Shop Overview</h2>
+        <p className="text-sm" style={{ color: "#2a6eb5" }}>
+          Real-time snapshot of your cake shop. All changes reflect instantly on the public site.
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard value={products.length}  label="Menu Products"     icon="🛍️" />
-        <StatsCard value={categories.length} label="Product Categories" icon="📂" />
-        <StatsCard value={gallery.length}   label="Gallery Items"     icon="🖼️" />
-        <StatsCard value={delivered}        label="Delivered Orders"  icon="✅" />
-        <StatsCard value={featured}         label="Featured Picks"    icon="⭐" />
-        <StatsCard value={carousel.length}  label="Carousel Slides"   icon="🎠" />
-        <StatsCard value={lastUpdated}      label="Last Updated"      icon="📅" />
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <StatCard value={products.length}   label="Menu Products"      Icon={MdShoppingBag} />
+        <StatCard value={categories.length} label="Categories"         Icon={MdCategory} />
+        <StatCard value={gallery.length}    label="Gallery Items"      Icon={MdPhoto} />
+        <StatCard value={delivered}         label="Delivered Orders"   Icon={MdCheckCircle} />
+        <StatCard value={featured}          label="Featured Picks"     Icon={MdStar} />
+        <StatCard value={carousel.length}   label="Carousel Slides"    Icon={MdViewCarousel} />
+        <StatCard value={lastUpdated}       label="Today"              Icon={MdCalendarToday} />
       </div>
 
       {/* Quick actions */}
-      <div className="card-dark p-5 rounded-2xl">
-        <h3 className="font-playfair text-lg font-bold text-white mb-4">Quick Actions</h3>
+      <div className="rounded-2xl p-5 flex flex-col gap-4" style={CARD}>
+        <h3 className="font-playfair text-base font-bold text-white border-b pb-3"
+          style={{ borderColor: "rgba(0,190,255,0.14)" }}>
+          Quick Actions
+        </h3>
         <div className="flex flex-wrap gap-3">
-          <button onClick={() => onNavigate("products")} className="btn-primary text-sm">+ Add Product</button>
-          <button onClick={() => onNavigate("gallery")}  className="btn-primary text-sm">+ Add Gallery Item</button>
-          <button onClick={() => onNavigate("carousel")} className="btn-primary text-sm">+ Add Carousel Slide</button>
-          <button onClick={() => onNavigate("settings")} className="btn-outline text-sm">⚙️ Settings</button>
+          <button onClick={() => onNavigate("products")} className="btn-primary text-sm">Add Product</button>
+          <button onClick={() => onNavigate("gallery")}  className="btn-primary text-sm">Add Gallery Item</button>
+          <button onClick={() => onNavigate("carousel")} className="btn-primary text-sm">Add Carousel Slide</button>
+          <button onClick={() => onNavigate("settings")} className="btn-outline text-sm">Settings</button>
         </div>
       </div>
 
-      {/* Recent items */}
-      <div className="card-dark p-5 rounded-2xl">
-        <h3 className="font-playfair text-lg font-bold text-white mb-4">Recent Gallery Items</h3>
+      {/* Recent gallery items */}
+      <div className="rounded-2xl p-5 flex flex-col gap-4" style={CARD}>
+        <h3 className="font-playfair text-base font-bold text-white border-b pb-3"
+          style={{ borderColor: "rgba(0,190,255,0.14)" }}>
+          Recent Gallery Items
+        </h3>
         {recent.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-4xl mb-2">🎂</p>
-            <p className="text-choco-300 text-sm">No gallery items yet.</p>
-            <button onClick={() => onNavigate("gallery")} className="btn-primary text-sm mt-3">Add Your First Cake</button>
+            <p className="text-sm mb-3" style={{ color: "#2a6eb5" }}>No gallery items yet.</p>
+            <button onClick={() => onNavigate("gallery")} className="btn-primary text-sm">Add Your First Cake</button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {recent.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-choco-700">
+              <div key={item.id} className="flex items-center gap-3 p-2 rounded-xl transition-colors"
+                style={{ borderBottom: "1px solid rgba(0,190,255,0.06)" }}>
+                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0"
+                  style={{ background: "#051e36" }}>
                   {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.caption} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xl">🎂</div>
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MdPhoto size={18} style={{ color: "rgba(0,190,255,0.35)" }} />
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-white truncate">{item.caption}</p>
-                  <p className="text-xs text-caramel-400 capitalize">
+                  <p className="text-xs capitalize" style={{ color: "#00beff" }}>
                     {item.category}
-                    {item.featured && " · ⭐ Featured"}
-                    {item.type === "delivered" && " · ✅ Delivered"}
+                    {item.featured && " · Featured"}
+                    {item.type === "delivered" && " · Delivered"}
                   </p>
                 </div>
               </div>

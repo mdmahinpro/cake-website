@@ -45,6 +45,7 @@ export interface Settings {
   instagramUrl: string;
   youtubeChannelUrl: string;
   accentColor: string;
+  defaultTheme: "navy" | "chocolate";
 }
 
 export interface StoreState {
@@ -88,6 +89,7 @@ const defaultSettings: Settings = {
   instagramUrl: "",
   youtubeChannelUrl: "",
   accentColor: "#d4a574",
+  defaultTheme: "navy",
 };
 
 const defaultState: StoreState = {

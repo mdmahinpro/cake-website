@@ -5,44 +5,41 @@ export type SiteTheme = "navy" | "chocolate";
 interface ThemeCtx {
   siteTheme: SiteTheme;
   toggleTheme: () => void;
+  setTheme: (t: SiteTheme) => void;
 }
 
-const ThemeContext = createContext<ThemeCtx>({ siteTheme: "navy", toggleTheme: () => {} });
+const ThemeContext = createContext<ThemeCtx>({ siteTheme: "navy", toggleTheme: () => {}, setTheme: () => {} });
+
+function readInitialTheme(): SiteTheme {
+  try {
+    const userPref = localStorage.getItem("site-theme") as SiteTheme;
+    if (userPref === "navy" || userPref === "chocolate") return userPref;
+    const stored = JSON.parse(localStorage.getItem("sweet_dreams_store") || "{}");
+    const dt = stored?.settings?.defaultTheme;
+    return dt === "navy" || dt === "chocolate" ? dt : "navy";
+  } catch { return "navy"; }
+}
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => {
-    try { return (localStorage.getItem("site-theme") as SiteTheme) || "navy"; }
-    catch { return "navy"; }
-  });
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(readInitialTheme);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", siteTheme);
     try { localStorage.setItem("site-theme", siteTheme); } catch {}
   }, [siteTheme]);
 
-  function toggleTheme() {
-    setSiteTheme((t) => (t === "navy" ? "chocolate" : "navy"));
-  }
+  function toggleTheme() { setSiteTheme((t) => (t === "navy" ? "chocolate" : "navy")); }
+  function setTheme(t: SiteTheme) { setSiteTheme(t); }
 
   return (
-    <ThemeContext.Provider value={{ siteTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ siteTheme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-export function useTheme() {
-  return useContext(ThemeContext);
-}
+export function useTheme() { return useContext(ThemeContext); }
 
-/*
-  THEME_TOKENS
-  Provides raw colour values for inline styles / SVG attributes / whileHover
-  that cannot be driven by CSS variables alone.
-
-  Navy  → electric aqua  (#00beff)
-  Choco → warm cream     (#f0d9a8)
-*/
 export const THEME_TOKENS = {
   navy: {
     accentRgb:  "0,190,255",

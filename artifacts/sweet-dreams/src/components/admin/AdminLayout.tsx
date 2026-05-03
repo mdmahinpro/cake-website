@@ -44,13 +44,12 @@ function DesktopSidebar({ current, onNavigate, onLogout }: { current: AdminPage;
       {/* Brand */}
       <div className="px-5 pt-5 pb-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xl">🎂</span>
           <span className="font-dancing text-base font-bold truncate" style={{ color: ACTIVE_TEXT }}>
             {state.settings.shopName}
           </span>
         </div>
         <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: ACTIVE_TEXT }}>
-          ⚙ Admin Panel
+          Admin Panel
         </span>
       </div>
 
@@ -107,7 +106,7 @@ export default function AdminLayout({ currentPage, onNavigate, onLogout, childre
           <div className="flex items-center gap-2 min-w-0">
             <span className="hidden md:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase"
               style={{ color: ACTIVE_TEXT, background: ACTIVE_BG, border: `1px solid ${BORDER}` }}>
-              ⚙ Admin
+              Admin
             </span>
             <h1 className="font-playfair text-base sm:text-lg font-bold text-white truncate">{pageTitle}</h1>
           </div>

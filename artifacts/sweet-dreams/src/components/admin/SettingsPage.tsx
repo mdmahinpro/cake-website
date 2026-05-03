@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore, type Settings } from "../../store/useStore";
+import { useTheme, type SiteTheme } from "../../context/ThemeContext";
 import { DEMO_GALLERY, DEMO_CAROUSEL, DEMO_PRODUCT_CATEGORIES, DEMO_PRODUCTS } from "../../data/demoData";
 
 function Toggle({ on, onToggle, size = "sm" }: { on: boolean; onToggle: () => void; size?: "sm" | "lg" }) {
@@ -38,12 +39,15 @@ function Toggle({ on, onToggle, size = "sm" }: { on: boolean; onToggle: () => vo
   );
 }
 
+const CARD_STYLE = { background: "rgba(3,21,37,0.85)", border: "1px solid rgba(0,190,255,0.16)" };
+const BORDER_B   = { borderColor: "rgba(0,190,255,0.14)" };
+
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl flex flex-col gap-4 p-4 sm:p-5"
-      style={{ background: "rgba(3,21,37,0.85)", border: "1px solid rgba(0,190,255,0.16)" }}>
-      <h3 className="font-playfair text-base font-bold text-white border-b pb-3"
-        style={{ borderColor: "rgba(0,190,255,0.14)" }}>{title}</h3>
+    <div className="rounded-2xl flex flex-col gap-4 p-4 sm:p-5" style={CARD_STYLE}>
+      <h3 className="font-playfair text-base font-bold text-white border-b pb-3" style={BORDER_B}>
+        {title}
+      </h3>
       {children}
     </div>
   );
@@ -69,7 +73,7 @@ function SaveToast({ visible }: { visible: boolean }) {
           exit={{ opacity: 0, y: 10, scale: 0.9 }}
           className="fixed bottom-24 md:bottom-6 right-4 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-xl"
           style={{ background: "linear-gradient(135deg,#00a2dc,#00beff)", boxShadow: "0 8px 30px rgba(0,190,255,0.4)" }}>
-          ✓ Settings saved
+          Saved
         </motion.div>
       )}
     </AnimatePresence>
@@ -78,19 +82,18 @@ function SaveToast({ visible }: { visible: boolean }) {
 
 export default function SettingsPage() {
   const { state, dispatch } = useStore();
+  const { setTheme } = useTheme();
   const [form, setForm] = useState<Settings>({ ...state.settings });
   const [saved, setSaved] = useState(false);
   const [clearConfirm, setClearConfirm] = useState(false);
   const isFirstRender = useRef(true);
 
-  // Password change
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw]         = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [pwError, setPwError]     = useState("");
   const [pwSaved, setPwSaved]     = useState(false);
 
-  /* ── Auto-save: dispatch every time form changes (skip mount) ── */
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     const t = setTimeout(() => {
@@ -103,6 +106,11 @@ export default function SettingsPage() {
 
   function set<K extends keyof Settings>(key: K, value: Settings[K]) {
     setForm(f => ({ ...f, [key]: value }));
+  }
+
+  function handleThemeChange(theme: SiteTheme) {
+    set("defaultTheme", theme);
+    setTheme(theme);
   }
 
   function handlePasswordChange(e: React.FormEvent) {
@@ -141,10 +149,10 @@ export default function SettingsPage() {
   }
 
   function handleRestoreDemo() {
-    dispatch({ type: "SET_GALLERY",     payload: DEMO_GALLERY });
-    dispatch({ type: "SET_CAROUSEL",    payload: DEMO_CAROUSEL });
-    dispatch({ type: "SET_CATEGORIES",  payload: DEMO_PRODUCT_CATEGORIES });
-    dispatch({ type: "SET_PRODUCTS",    payload: DEMO_PRODUCTS });
+    dispatch({ type: "SET_GALLERY",    payload: DEMO_GALLERY });
+    dispatch({ type: "SET_CAROUSEL",   payload: DEMO_CAROUSEL });
+    dispatch({ type: "SET_CATEGORIES", payload: DEMO_PRODUCT_CATEGORIES });
+    dispatch({ type: "SET_PRODUCTS",   payload: DEMO_PRODUCTS });
     localStorage.removeItem("cake-demo-loaded");
     localStorage.removeItem("cake-products-loaded-v4");
     setSaved(true);
@@ -157,6 +165,7 @@ export default function SettingsPage() {
       heroTitle: "Your Dream Cake Starts Here", heroSubtitle: "Handcrafted custom cakes for every occasion",
       whatsappNumber: "8801700000000", facebookPageUrl: "https://facebook.com/yourpage",
       orderChannel: "whatsapp", instagramUrl: "", youtubeChannelUrl: "", accentColor: "#00beff",
+      defaultTheme: "navy",
     };
     dispatch({ type: "SET_GALLERY",  payload: [] });
     dispatch({ type: "SET_CAROUSEL", payload: [] });
@@ -166,18 +175,18 @@ export default function SettingsPage() {
   }
 
   const isWhatsApp = form.orderChannel === "whatsapp";
+  const isNavy     = (form.defaultTheme ?? "navy") === "navy";
 
   return (
     <div className="max-w-xl mx-auto flex flex-col gap-4 pb-6">
       <SaveToast visible={saved} />
 
-      {/* Auto-save notice */}
       <p className="text-xs text-center" style={{ color: "#2a6eb5" }}>
-        ✦ Changes save automatically — no button needed
+        Changes save automatically — no button needed
       </p>
 
       {/* ── Shop Info ── */}
-      <Card title="🏪 Shop Info">
+      <Card title="Shop Info">
         <Field label="Shop Name">
           <input className="input-dark" value={form.shopName}
             onChange={e => set("shopName", e.target.value)} />
@@ -197,7 +206,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* ── Order Channel ── */}
-      <Card title="📲 How Customers Order">
+      <Card title="How Customers Order">
         <Field label="WhatsApp Number" helper="Include country code without +  (e.g. 8801700000000)">
           <input className="input-dark" value={form.whatsappNumber}
             onChange={e => set("whatsappNumber", e.target.value)}
@@ -209,7 +218,6 @@ export default function SettingsPage() {
             placeholder="https://facebook.com/yourpage" inputMode="url" />
         </Field>
 
-        {/* Order channel toggle */}
         <div className="flex items-center justify-center gap-4 p-4 rounded-2xl"
           style={{ background: "rgba(1,13,30,0.6)", border: "1px solid rgba(0,190,255,0.12)" }}>
           <span className={`text-sm font-semibold transition-colors ${!isWhatsApp ? "text-blue-400" : "text-choco-400"}`}>
@@ -226,20 +234,20 @@ export default function SettingsPage() {
             <motion.div key="wa" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="p-3 rounded-xl text-sm text-green-300 text-center"
               style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)" }}>
-              ✅ Customers will WhatsApp your number
+              Customers will WhatsApp your number
             </motion.div>
           ) : (
             <motion.div key="fb" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="p-3 rounded-xl text-sm text-blue-300 text-center"
               style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.25)" }}>
-              💬 Customers will message your Facebook page
+              Customers will message your Facebook page
             </motion.div>
           )}
         </AnimatePresence>
       </Card>
 
       {/* ── Social Media ── */}
-      <Card title="📱 Social Media">
+      <Card title="Social Media">
         <Field label="Instagram URL">
           <input className="input-dark" value={form.instagramUrl}
             onChange={e => set("instagramUrl", e.target.value)}
@@ -252,8 +260,45 @@ export default function SettingsPage() {
         </Field>
       </Card>
 
-      {/* ── Admin Security ── */}
-      <Card title="🔒 Admin Password">
+      {/* ── Appearance / Default Theme ── */}
+      <Card title="Appearance">
+        <p className="text-xs" style={{ color: "#2a6eb5" }}>
+          This sets the default theme for all visitors. A visitor can still switch it manually using the toggle on the public site.
+        </p>
+
+        <div className="flex items-center justify-center gap-4 p-4 rounded-2xl"
+          style={{ background: "rgba(1,13,30,0.6)", border: "1px solid rgba(0,190,255,0.12)" }}>
+          {/* Chocolate swatch */}
+          <button type="button" onClick={() => handleThemeChange("chocolate")}
+            className="flex flex-col items-center gap-1.5 transition-all"
+            style={{ opacity: isNavy ? 0.45 : 1 }}>
+            <div className="w-8 h-8 rounded-full" style={{ background: "linear-gradient(135deg,#120602,#2a1006)", border: isNavy ? "2px solid transparent" : "2px solid #f0d9a8" }} />
+            <span className="text-xs font-medium" style={{ color: isNavy ? "#2a6eb5" : "#f0d9a8" }}>Chocolate</span>
+          </button>
+
+          <Toggle on={isNavy} onToggle={() => handleThemeChange(isNavy ? "chocolate" : "navy")} size="lg" />
+
+          {/* Navy swatch */}
+          <button type="button" onClick={() => handleThemeChange("navy")}
+            className="flex flex-col items-center gap-1.5 transition-all"
+            style={{ opacity: isNavy ? 1 : 0.45 }}>
+            <div className="w-8 h-8 rounded-full" style={{ background: "linear-gradient(135deg,#010d1e,#051e36)", border: isNavy ? "2px solid #00beff" : "2px solid transparent" }} />
+            <span className="text-xs font-medium" style={{ color: isNavy ? "#00beff" : "#2a6eb5" }}>Navy</span>
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div key={isNavy ? "navy" : "choc"}
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="text-center text-xs py-2 rounded-xl"
+            style={{ color: isNavy ? "#00beff" : "#f0d9a8", background: isNavy ? "rgba(0,190,255,0.06)" : "rgba(240,217,168,0.06)", border: `1px solid ${isNavy ? "rgba(0,190,255,0.18)" : "rgba(240,217,168,0.18)"}` }}>
+            Default theme: <strong>{isNavy ? "Navy" : "Chocolate"}</strong> — applied instantly to the public site
+          </motion.div>
+        </AnimatePresence>
+      </Card>
+
+      {/* ── Admin Password ── */}
+      <Card title="Admin Password">
         <form onSubmit={handlePasswordChange} className="flex flex-col gap-3">
           <Field label="Current Password">
             <input type="password" className="input-dark" value={currentPw}
@@ -274,7 +319,7 @@ export default function SettingsPage() {
             )}
             {pwSaved && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="text-green-400 text-sm">✅ Password updated!</motion.p>
+                className="text-green-400 text-sm">Password updated</motion.p>
             )}
           </AnimatePresence>
           <button type="submit" className="btn-primary w-full sm:w-fit text-sm">
@@ -284,11 +329,11 @@ export default function SettingsPage() {
       </Card>
 
       {/* ── Data Management ── */}
-      <Card title="💾 Data Management">
+      <Card title="Data Management">
         {/* Restore demo */}
         <div className="p-3 rounded-xl" style={{ background: "rgba(0,190,255,0.06)", border: "1px solid rgba(0,190,255,0.18)" }}>
           <p className="text-xs mb-2.5" style={{ color: "#4dd9ff" }}>
-            🔄 Public site showing no content? Restore the demo gallery, carousel, products and categories instantly.
+            Public site showing no content? Restore the demo gallery, carousel, products and categories instantly.
           </p>
           <button onClick={handleRestoreDemo} className="btn-primary text-sm py-2.5 px-5 w-full sm:w-auto">
             Restore Demo Content
@@ -298,10 +343,10 @@ export default function SettingsPage() {
         {/* Export / import */}
         <div className="flex flex-wrap gap-3">
           <button onClick={handleExport} className="btn-outline text-sm py-2.5 px-5">
-            📤 Export JSON
+            Export JSON
           </button>
           <label className="btn-outline text-sm py-2.5 px-5 cursor-pointer">
-            📥 Import JSON
+            Import JSON
             <input type="file" accept=".json" className="hidden" onChange={handleImport} />
           </label>
         </div>
@@ -309,12 +354,12 @@ export default function SettingsPage() {
         {/* Clear all */}
         <div className="pt-3" style={{ borderTop: "1px solid rgba(0,190,255,0.12)" }}>
           <p className="text-xs mb-3" style={{ color: "#2a6eb5" }}>
-            ⚠️ Clear All will delete all gallery items, carousel slides, and reset settings.
+            Clear All will permanently delete all gallery items, carousel slides, and reset settings.
           </p>
           {!clearConfirm ? (
             <button onClick={() => setClearConfirm(true)}
               className="text-sm text-red-400 hover:text-red-300 border border-red-800/40 hover:border-red-600/40 px-4 py-2.5 rounded-full transition-all w-full sm:w-auto">
-              🗑️ Clear All Data
+              Clear All Data
             </button>
           ) : (
             <div className="flex flex-col sm:flex-row gap-3">
