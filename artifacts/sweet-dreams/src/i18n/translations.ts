@@ -5,6 +5,7 @@ const T = {
     nav: {
       home:      "Home",
       gallery:   "Gallery",
+      menu:      "Our Menu",
       orderNow:  "Order Now",
       navy:      "Navy",
       chocolate: "Chocolate",
@@ -108,6 +109,7 @@ const T = {
     nav: {
       home:      "হোম",
       gallery:   "গ্যালারি",
+      menu:      "আমাদের মেনু",
       orderNow:  "অর্ডার করুন",
       navy:      "নেভি",
       chocolate: "চকোলেট",

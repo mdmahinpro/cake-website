@@ -94,7 +94,6 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
   }
 
   function handleEdit(item: CakeItem) {
-    const ext = item as CakeItem & { youtubeUrl?: string };
     setEditingId(item.id);
     setForm({
       imageSource: item.imageUrl.startsWith("data:") ? "upload" : "url",
@@ -102,7 +101,7 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
       imageBase64: item.imageUrl.startsWith("data:") ? item.imageUrl : "",
       caption: item.caption, category: item.category,
       featured: item.featured || false,
-      youtubeUrl: ext.youtubeUrl || "", review: item.review || "",
+      youtubeUrl: item.youtubeUrl || "", review: item.review || "",
     });
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   }
@@ -357,7 +356,7 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
                     <MdStar size={15} style={{ color: item.featured ? "#fff" : "rgba(255,255,255,0.5)" }} />
                   </button>
 
-                  {(item as CakeItem & { youtubeUrl?: string }).youtubeUrl && (
+                  {item.youtubeUrl && (
                     <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-red-600/90 text-white leading-none">Video</span>
                   )}
                   {item.review && (

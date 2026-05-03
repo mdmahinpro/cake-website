@@ -10,6 +10,7 @@ export interface CakeItem {
   featured?: boolean;
   type?: string;
   review?: string;
+  youtubeUrl?: string;
 }
 
 export interface CarouselSlide {
@@ -108,7 +109,7 @@ const defaultState: StoreState = {
 };
 
 const STORAGE_KEY = "sweet_dreams_store";
-const DEMO_KEY = "cake-demo-loaded";
+const DEMO_KEY = "cake-demo-loaded-v2";
 const PRODUCTS_DEMO_KEY = "cake-products-loaded-v4";
 const LOCAL_MODIFIED_KEY = "sd_last_modified";
 
@@ -140,8 +141,13 @@ function loadFromStorage(): StoreState {
       products = DEMO_PRODUCTS;
     }
 
+    const mergedSettings = { ...defaultSettings, ...(base.settings ?? {}) };
+    if (mergedSettings.heroSubtitle === "Handcrafted custom cakess for every occasion") {
+      mergedSettings.heroSubtitle = defaultSettings.heroSubtitle;
+    }
+
     return {
-      settings: { ...defaultSettings, ...(base.settings ?? {}) },
+      settings: mergedSettings,
       gallery,
       carousel,
       categories,

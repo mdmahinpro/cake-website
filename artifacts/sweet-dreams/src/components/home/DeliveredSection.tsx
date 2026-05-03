@@ -26,7 +26,7 @@ export default function DeliveredSection() {
         <AnimatedSection className="text-center mb-12">
           <p className="section-subtitle mb-2 font-hind">{t.delivered.subtitle}</p>
           <h2 className="section-title font-hind">{t.delivered.title}</h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-caramel-400 to-rose-cake mx-auto mt-4 rounded-full" />
+          <div className="w-24 h-1 bg-gradient-to-r from-caramel-400 to-caramel-200 mx-auto mt-4 rounded-full" />
         </AnimatedSection>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">

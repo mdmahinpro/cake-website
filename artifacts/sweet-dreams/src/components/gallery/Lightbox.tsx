@@ -43,7 +43,7 @@ export default function Lightbox({ item, index, items, onClose, onNext, onPrev }
     };
   }, [onNext, onPrev]);
 
-  const youtubeUrl = (item as CakeItem & { youtubeUrl?: string }).youtubeUrl;
+  const youtubeUrl = item.youtubeUrl;
 
   return (
     <motion.div

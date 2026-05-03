@@ -95,6 +95,7 @@ export default function Navbar() {
   const NAV_LINKS = [
     { label: t.nav.home,    to: "/" },
     { label: t.nav.gallery, to: "/gallery" },
+    { label: t.nav.menu,    to: "/products" },
   ];
 
   useEffect(() => {
