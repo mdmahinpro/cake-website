@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore, type Settings } from "../../store/useStore";
+import { DEMO_GALLERY, DEMO_CAROUSEL, DEMO_PRODUCT_CATEGORIES, DEMO_PRODUCTS } from "../../data/demoData";
 
 function Toggle({ on, onToggle, size = "sm" }: { on: boolean; onToggle: () => void; size?: "sm" | "lg" }) {
   const isLg = size === "lg";
@@ -15,16 +16,21 @@ function Toggle({ on, onToggle, size = "sm" }: { on: boolean; onToggle: () => vo
       type="button"
       onClick={onToggle}
       aria-pressed={on}
-      className="flex-shrink-0 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-caramel-400"
+      className="rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-caramel-400"
       style={{
         width: trackW, height: trackH,
+        minWidth: trackW, maxWidth: "none",
+        flexShrink: 0,
+        overflow: "hidden",
+        position: "relative",
+        display: "inline-block",
         background: on ? "#00beff" : "#031525",
         border: `1.5px solid ${on ? "#00beff" : "rgba(0,190,255,0.25)"}`,
-        position: "relative",
+        transition: "background 0.25s, border-color 0.25s",
       }}>
       <motion.span
         className="absolute rounded-full bg-white shadow"
-        style={{ width: thumbS, height: thumbS, top: pad - 1.5 }}
+        style={{ width: thumbS, height: thumbS, top: pad - 1.5, left: 0 }}
         animate={{ x: on ? onX : pad }}
         transition={{ type: "spring", stiffness: 600, damping: 38 }}
       />
@@ -132,6 +138,17 @@ export default function SettingsPage() {
       } catch { alert("Invalid JSON file"); }
     };
     reader.readAsText(file);
+  }
+
+  function handleRestoreDemo() {
+    dispatch({ type: "SET_GALLERY",     payload: DEMO_GALLERY });
+    dispatch({ type: "SET_CAROUSEL",    payload: DEMO_CAROUSEL });
+    dispatch({ type: "SET_CATEGORIES",  payload: DEMO_PRODUCT_CATEGORIES });
+    dispatch({ type: "SET_PRODUCTS",    payload: DEMO_PRODUCTS });
+    localStorage.removeItem("cake-demo-loaded");
+    localStorage.removeItem("cake-products-loaded-v4");
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   function handleClearAll() {
@@ -268,6 +285,17 @@ export default function SettingsPage() {
 
       {/* ── Data Management ── */}
       <Card title="💾 Data Management">
+        {/* Restore demo */}
+        <div className="p-3 rounded-xl" style={{ background: "rgba(0,190,255,0.06)", border: "1px solid rgba(0,190,255,0.18)" }}>
+          <p className="text-xs mb-2.5" style={{ color: "#4dd9ff" }}>
+            🔄 Public site showing no content? Restore the demo gallery, carousel, products and categories instantly.
+          </p>
+          <button onClick={handleRestoreDemo} className="btn-primary text-sm py-2.5 px-5 w-full sm:w-auto">
+            Restore Demo Content
+          </button>
+        </div>
+
+        {/* Export / import */}
         <div className="flex flex-wrap gap-3">
           <button onClick={handleExport} className="btn-outline text-sm py-2.5 px-5">
             📤 Export JSON
@@ -277,6 +305,8 @@ export default function SettingsPage() {
             <input type="file" accept=".json" className="hidden" onChange={handleImport} />
           </label>
         </div>
+
+        {/* Clear all */}
         <div className="pt-3" style={{ borderTop: "1px solid rgba(0,190,255,0.12)" }}>
           <p className="text-xs mb-3" style={{ color: "#2a6eb5" }}>
             ⚠️ Clear All will delete all gallery items, carousel slides, and reset settings.

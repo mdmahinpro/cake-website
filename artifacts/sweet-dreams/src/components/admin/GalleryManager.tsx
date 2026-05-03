@@ -67,10 +67,21 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
   const finalImage = form.imageSource === "upload" ? form.imageBase64 : form.imageUrl;
 
   function handleFile(file: File) {
-    if (file.size > 1.5 * 1024 * 1024) alert("Image is larger than 1.5MB. It will still work but may slow the page.");
-    const reader = new FileReader();
-    reader.onload = (e) => setForm((f) => ({ ...f, imageBase64: e.target?.result as string }));
-    reader.readAsDataURL(file);
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 800;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      setForm((f) => ({ ...f, imageBase64: canvas.toDataURL("image/jpeg", 0.75) }));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); };
+    img.src = url;
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -227,16 +238,17 @@ export default function GalleryManager({ filterDelivered = false }: GalleryManag
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setForm((f) => ({ ...f, featured: !f.featured }))}
                   aria-pressed={form.featured}
-                  className="relative rounded-full flex-shrink-0 focus:outline-none"
                   style={{
-                    width: 44, height: 22,
+                    width: 44, height: 22, minWidth: 44, maxWidth: "none",
+                    flexShrink: 0, overflow: "hidden", position: "relative",
+                    display: "inline-block", borderRadius: 9999,
                     background: form.featured ? "#00beff" : "#031525",
                     border: `1.5px solid ${form.featured ? "#00beff" : "rgba(0,190,255,0.25)"}`,
                     transition: "background 0.25s, border-color 0.25s",
                   }}>
                   <motion.span
                     className="absolute rounded-full bg-white shadow"
-                    style={{ width: 16, height: 16, top: 2 }}
+                    style={{ width: 16, height: 16, top: 2, left: 0 }}
                     animate={{ x: form.featured ? 23 : 3 }}
                     transition={{ type: "spring", stiffness: 600, damping: 38 }}
                   />

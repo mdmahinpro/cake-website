@@ -41,11 +41,21 @@ export default function CarouselManager() {
   const finalImage = form.imageSource === "upload" ? form.imageBase64 : form.imageUrl;
 
   function handleFile(file: File) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setForm((f) => ({ ...f, imageBase64: e.target?.result as string }));
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 900;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      setForm((f) => ({ ...f, imageBase64: canvas.toDataURL("image/jpeg", 0.72) }));
     };
-    reader.readAsDataURL(file);
+    img.onerror = () => { URL.revokeObjectURL(url); };
+    img.src = url;
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -177,8 +187,21 @@ export default function CarouselManager() {
               <div className="flex items-center gap-3">
                 <button type="button"
                   onClick={() => setForm((f) => ({ ...f, isActive: !f.isActive }))}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-300 flex-shrink-0 ${form.isActive ? "bg-caramel-400" : "bg-choco-700"}`}>
-                  <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${form.isActive ? "translate-x-6" : "translate-x-0.5"}`} />
+                  aria-pressed={form.isActive}
+                  style={{
+                    width: 44, height: 22, minWidth: 44, maxWidth: "none",
+                    flexShrink: 0, overflow: "hidden", position: "relative",
+                    display: "inline-block", borderRadius: 9999,
+                    background: form.isActive ? "#00beff" : "#031525",
+                    border: `1.5px solid ${form.isActive ? "#00beff" : "rgba(0,190,255,0.25)"}`,
+                    transition: "background 0.25s, border-color 0.25s",
+                  }}>
+                  <motion.span
+                    className="absolute rounded-full bg-white shadow"
+                    style={{ width: 16, height: 16, top: 2, left: 0 }}
+                    animate={{ x: form.isActive ? 23 : 3 }}
+                    transition={{ type: "spring", stiffness: 600, damping: 38 }}
+                  />
                 </button>
                 <span className="text-sm text-caramel-300">Active (visible on site)</span>
               </div>
