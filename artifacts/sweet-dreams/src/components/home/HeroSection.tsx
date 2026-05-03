@@ -115,15 +115,6 @@ export default function HeroSection() {
               </motion.button>
             </motion.div>
 
-            <motion.div {...fadeUp(0.42)} className="flex flex-wrap gap-2 justify-center md:justify-start">
-              {["Fresh Daily", "Custom Design", "Free Delivery"].map((badge) => (
-                <span key={badge}
-                  className="px-3 py-1.5 rounded-full text-xs text-caramel-300 border border-caramel-600/40"
-                  style={{ background: `${tokens.bgDeep}cc` }}>
-                  {badge}
-                </span>
-              ))}
-            </motion.div>
           </div>
 
           {/* ── Cake visual (top on mobile, right on desktop) ── */}

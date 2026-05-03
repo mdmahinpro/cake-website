@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { FaWhatsapp, FaFacebook } from "react-icons/fa";
 import { useStore } from "../../store/useStore";
 import { useTheme } from "../../context/ThemeContext";
+import { useLang } from "../../context/LangContext";
 import { openOrderChannel } from "../../utils/order";
 
 const NAV_LINKS = [
@@ -31,9 +32,8 @@ function CakeLogo() {
 function ThemeToggle() {
   const { siteTheme, toggleTheme } = useTheme();
   const isNavy = siteTheme === "navy";
-
-  const pillBg     = isNavy ? "rgba(0,190,255,0.08)"    : "rgba(240,217,168,0.1)";
-  const pillBorder = isNavy ? "rgba(0,190,255,0.25)"    : "rgba(240,217,168,0.3)";
+  const pillBg     = isNavy ? "rgba(0,190,255,0.08)"  : "rgba(240,217,168,0.1)";
+  const pillBorder = isNavy ? "rgba(0,190,255,0.25)"  : "rgba(240,217,168,0.3)";
 
   return (
     <motion.button
@@ -44,7 +44,6 @@ function ThemeToggle() {
       className="relative flex items-center gap-1.5 h-7 px-2.5 rounded-full transition-all duration-300 select-none focus:outline-none"
       style={{ background: pillBg, border: `1px solid ${pillBorder}` }}
     >
-      {/* Aqua dot — navy theme active indicator */}
       <motion.span
         animate={{ scale: isNavy ? 1.3 : 1, opacity: isNavy ? 1 : 0.28 }}
         transition={{ duration: 0.25 }}
@@ -52,7 +51,6 @@ function ThemeToggle() {
         style={{ background: "#00beff" }}
       />
       <span className="w-px h-3 bg-white/10 flex-shrink-0" />
-      {/* Cream dot — chocolate theme active indicator */}
       <motion.span
         animate={{ scale: !isNavy ? 1.3 : 1, opacity: !isNavy ? 1 : 0.28 }}
         transition={{ duration: 0.25 }}
@@ -63,12 +61,38 @@ function ThemeToggle() {
   );
 }
 
+/* ── EN / BN language toggle ── */
+function LangToggle() {
+  const { lang, toggleLang } = useLang();
+  const isEn = lang === "en";
+
+  return (
+    <motion.button
+      onClick={toggleLang}
+      whileTap={{ scale: 0.88 }}
+      aria-label="Toggle language"
+      className="relative flex items-center h-7 px-2.5 rounded-full select-none focus:outline-none transition-all duration-300"
+      style={{ background: "rgba(0,190,255,0.07)", border: "1px solid rgba(0,190,255,0.22)" }}
+    >
+      <span className="text-[11px] font-bold font-poppins leading-none transition-all duration-200"
+        style={{ color: isEn ? "#00beff" : "rgba(0,190,255,0.35)" }}>
+        EN
+      </span>
+      <span className="mx-1 text-[10px] leading-none" style={{ color: "rgba(0,190,255,0.25)" }}>/</span>
+      <span className="text-[11px] font-bold font-poppins leading-none transition-all duration-200"
+        style={{ color: !isEn ? "#00beff" : "rgba(0,190,255,0.35)" }}>
+        BN
+      </span>
+    </motion.button>
+  );
+}
+
 export default function Navbar() {
   const { state } = useStore();
   const { settings } = state;
   const { siteTheme } = useTheme();
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 20); }
@@ -100,11 +124,8 @@ export default function Navbar() {
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="relative text-caramel-200 hover:text-caramel-400 font-poppins text-sm font-medium transition-colors duration-200 group"
-              >
+              <Link key={link.to} to={link.to}
+                className="relative text-caramel-200 hover:text-caramel-400 font-poppins text-sm font-medium transition-colors duration-200 group">
                 {link.label}
                 <span className="absolute -bottom-0.5 left-0 w-full h-px bg-caramel-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </Link>
@@ -112,23 +133,29 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
+          <div className="flex items-center gap-2.5">
+            {/* Desktop: both toggles side-by-side */}
+            <div className="hidden md:flex items-center gap-2">
+              <ThemeToggle />
+              <LangToggle />
+            </div>
 
-            <button
-              onClick={handleOrder}
-              className="hidden md:flex items-center gap-2 btn-primary px-4 py-2 text-sm"
-            >
+            {/* Mobile: only EN/BN toggle (color toggle lives in hamburger) */}
+            <div className="md:hidden">
+              <LangToggle />
+            </div>
+
+            {/* Desktop Order Now button */}
+            <button onClick={handleOrder}
+              className="hidden md:flex items-center gap-2 btn-primary px-4 py-2 text-sm">
               <OrderIcon size={16} />
               Order Now
             </button>
 
-            {/* Hamburger */}
-            <button
-              onClick={() => setMenuOpen(true)}
+            {/* Hamburger — mobile only */}
+            <button onClick={() => setMenuOpen(true)}
               className="md:hidden flex flex-col gap-1.5 p-2 text-caramel-400 min-w-[44px] min-h-[44px] items-center justify-center"
-              aria-label="Open menu"
-            >
+              aria-label="Open menu">
               <span className="block w-6 h-0.5 bg-caramel-400 rounded" />
               <span className="block w-6 h-0.5 bg-caramel-400 rounded" />
               <span className="block w-6 h-0.5 bg-caramel-400 rounded" />
@@ -137,7 +164,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile full-screen menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -147,6 +174,7 @@ export default function Navbar() {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
+            {/* Menu header — theme toggle lives here on mobile */}
             <div className="flex justify-between items-center p-6">
               <div className="flex items-center gap-2">
                 <ThemeToggle />
@@ -154,11 +182,9 @@ export default function Navbar() {
                   {siteTheme === "navy" ? "Navy" : "Chocolate"}
                 </span>
               </div>
-              <button
-                onClick={() => setMenuOpen(false)}
+              <button onClick={() => setMenuOpen(false)}
                 className="text-caramel-400 hover:text-caramel-200 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Close menu"
-              >
+                aria-label="Close menu">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6"  x2="6"  y2="18" />
                   <line x1="6"  y1="6"  x2="18" y2="18" />
@@ -166,27 +192,21 @@ export default function Navbar() {
               </button>
             </div>
 
+            {/* Nav links */}
             <div className="flex-1 flex flex-col items-center justify-center gap-10">
               {[...NAV_LINKS, { label: "Order Now", to: null }].map((link, i) => (
-                <motion.div
-                  key={link.label}
+                <motion.div key={link.label}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 + 0.1 }}
-                >
+                  transition={{ delay: i * 0.08 + 0.1 }}>
                   {link.to ? (
-                    <Link
-                      to={link.to}
-                      onClick={() => setMenuOpen(false)}
-                      className="font-playfair text-4xl text-white hover:text-caramel-400 transition-colors duration-200"
-                    >
+                    <Link to={link.to} onClick={() => setMenuOpen(false)}
+                      className="font-playfair text-4xl text-white hover:text-caramel-400 transition-colors duration-200">
                       {link.label}
                     </Link>
                   ) : (
-                    <button
-                      onClick={() => { setMenuOpen(false); handleOrder(); }}
-                      className="btn-primary w-48 flex items-center justify-center gap-2 text-lg"
-                    >
+                    <button onClick={() => { setMenuOpen(false); handleOrder(); }}
+                      className="btn-primary w-48 flex items-center justify-center gap-2 text-lg">
                       <OrderIcon size={20} />
                       {link.label}
                     </button>
@@ -195,6 +215,7 @@ export default function Navbar() {
               ))}
             </div>
 
+            {/* Social links */}
             <div className="flex justify-center gap-4 pb-10">
               {settings.whatsappNumber && (
                 <a href={`https://wa.me/${settings.whatsappNumber}`} target="_blank" rel="noopener noreferrer"
