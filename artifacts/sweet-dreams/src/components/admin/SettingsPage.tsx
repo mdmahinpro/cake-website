@@ -4,6 +4,31 @@ import { useStore, type Settings, type CakeItem, type CarouselSlide, type Produc
 import { useTheme, type SiteTheme } from "../../context/ThemeContext";
 import { DEMO_GALLERY, DEMO_CAROUSEL, DEMO_PRODUCT_CATEGORIES, DEMO_PRODUCTS } from "../../data/demoData";
 
+/** Resize + compress an image file via Canvas before storing as base64.
+ *  maxDim caps the longest edge; quality is 0–1 (WebP). */
+function compressImage(file: File, maxDim: number, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height, 1));
+        const w = Math.max(1, Math.round(img.width  * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/webp", quality));
+      };
+      img.src = ev.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function Toggle({ on, onToggle, size = "sm" }: { on: boolean; onToggle: () => void; size?: "sm" | "lg" }) {
   const isLg = size === "lg";
   const trackW = isLg ? 56 : 44;
@@ -238,13 +263,12 @@ export default function SettingsPage() {
             <label className="btn-outline text-xs py-2 px-4 cursor-pointer">
               {form.logoUrl ? "Change Logo" : "Upload Logo"}
               <input type="file" accept="image/*" className="hidden"
-                onChange={e => {
+                onChange={async e => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = ev => set("logoUrl", ev.target?.result as string);
-                  reader.readAsDataURL(file);
                   e.target.value = "";
+                  const dataUrl = await compressImage(file, 400);
+                  set("logoUrl", dataUrl);
                 }} />
             </label>
             {form.logoUrl && (
@@ -266,13 +290,12 @@ export default function SettingsPage() {
             <label className="btn-outline text-xs py-2 px-4 cursor-pointer">
               {form.faviconUrl ? "Change Favicon" : "Upload Favicon"}
               <input type="file" accept="image/*" className="hidden"
-                onChange={e => {
+                onChange={async e => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = ev => set("faviconUrl", ev.target?.result as string);
-                  reader.readAsDataURL(file);
                   e.target.value = "";
+                  const dataUrl = await compressImage(file, 64, 0.9);
+                  set("faviconUrl", dataUrl);
                 }} />
             </label>
             {form.faviconUrl && (
