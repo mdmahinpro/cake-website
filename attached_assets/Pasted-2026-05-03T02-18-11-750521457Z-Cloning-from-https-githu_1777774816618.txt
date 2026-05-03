@@ -1,0 +1,88 @@
+2026-05-03T02:18:11.750521457Z ==> Cloning from https://github.com/mdmahinpro/cake-website
+2026-05-03T02:18:13.866197808Z ==> Checking out commit e191399bccd7630aee4239db6cd8e849077adc19 in branch main
+2026-05-03T02:18:26.268227451Z ==> Using Node.js version 24.14.1 (default)
+2026-05-03T02:18:26.312085989Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-05-03T02:18:29.544547833Z ==> Running build command 'npm install -g pnpm@10 && pnpm install && pnpm --filter @workspace/api-server run build'...
+2026-05-03T02:18:31.711523632Z 
+2026-05-03T02:18:31.711550863Z added 1 package in 1s
+2026-05-03T02:18:31.711556043Z 
+2026-05-03T02:18:31.711627554Z 1 package is looking for funding
+2026-05-03T02:18:31.711683226Z   run `npm fund` for details
+2026-05-03T02:18:46.492191145Z 
+2026-05-03T02:18:46.492222196Z > @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+2026-05-03T02:18:46.492227996Z > node ./build.mjs
+2026-05-03T02:18:46.492232006Z 
+2026-05-03T02:18:46.544727991Z Building frontend (sweet-dreams)...
+2026-05-03T02:18:46.879438157Z 
+2026-05-03T02:18:46.879464608Z > @workspace/sweet-dreams@0.0.0 build /opt/render/project/src/artifacts/sweet-dreams
+2026-05-03T02:18:46.879470648Z > vite build --config vite.config.ts
+2026-05-03T02:18:46.879475448Z 
+2026-05-03T02:18:47.305946802Z vite v7.3.2 building client environment for production...
+2026-05-03T02:18:47.37485122Z transforming...
+2026-05-03T02:18:49.847936666Z ✓ 490 modules transformed.
+2026-05-03T02:18:50.248950761Z [plugin vite:reporter] 
+2026-05-03T02:18:50.248977951Z (!) /opt/render/project/src/artifacts/sweet-dreams/src/lib/api.ts is dynamically imported by /opt/render/project/src/artifacts/sweet-dreams/src/components/admin/SyncPanel.tsx but also statically imported by /opt/render/project/src/artifacts/sweet-dreams/src/components/admin/SyncPanel.tsx, /opt/render/project/src/artifacts/sweet-dreams/src/store/useStore.tsx, dynamic import will not move module into another chunk.
+2026-05-03T02:18:50.248986462Z 
+2026-05-03T02:18:50.249835521Z rendering chunks...
+2026-05-03T02:18:50.264897484Z computing gzip size...
+2026-05-03T02:18:50.28319472Z dist/registerSW.js                0.13 kB
+2026-05-03T02:18:50.283214441Z dist/manifest.webmanifest         0.36 kB
+2026-05-03T02:18:50.283240571Z dist/index.html                   1.77 kB │ gzip:   0.74 kB
+2026-05-03T02:18:50.283255591Z dist/assets/index-B-TsW75c.css  114.35 kB │ gzip:  18.67 kB
+2026-05-03T02:18:50.283264911Z dist/assets/index-Dq7Jv8rl.js   547.54 kB │ gzip: 162.22 kB
+2026-05-03T02:18:50.283301783Z 
+2026-05-03T02:18:50.283309403Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-05-03T02:18:50.283313683Z - Using dynamic import() to code-split the application
+2026-05-03T02:18:50.283318083Z - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2026-05-03T02:18:50.283321883Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-05-03T02:18:50.283584669Z ✓ built in 2.95s
+2026-05-03T02:18:52.05071073Z 
+2026-05-03T02:18:52.050735671Z PWA v1.2.0
+2026-05-03T02:18:52.050743361Z mode      generateSW
+2026-05-03T02:18:52.050792802Z precache  10 entries (652.69 KiB)
+2026-05-03T02:18:52.050800182Z files generated
+2026-05-03T02:18:52.050802802Z   dist/sw.js
+2026-05-03T02:18:52.050805882Z   dist/workbox-01f28f5c.js
+2026-05-03T02:18:52.26032919Z Frontend built.
+2026-05-03T02:18:52.648158175Z 
+2026-05-03T02:18:52.648215986Z   dist/index.mjs                       1.8mb ⚠️
+2026-05-03T02:18:52.648222377Z   dist/pino-worker.mjs               153.4kb
+2026-05-03T02:18:52.648226587Z   dist/pino-file.mjs                 142.1kb
+2026-05-03T02:18:52.648230917Z   dist/pino-pretty.mjs               114.6kb
+2026-05-03T02:18:52.648234977Z   dist/thread-stream-worker.mjs        7.3kb
+2026-05-03T02:18:52.648243457Z   dist/index.mjs.map                   3.0mb
+2026-05-03T02:18:52.648247547Z   dist/pino-worker.mjs.map           256.9kb
+2026-05-03T02:18:52.648251627Z   dist/pino-file.mjs.map             229.0kb
+2026-05-03T02:18:52.648255607Z   dist/pino-pretty.mjs.map           203.9kb
+2026-05-03T02:18:52.648320109Z   dist/thread-stream-worker.mjs.map   12.0kb
+2026-05-03T02:18:52.648325439Z 
+2026-05-03T02:18:52.648330349Z ⚡ Done in 377ms
+2026-05-03T02:18:52.649204119Z Copying frontend into dist/public/...
+2026-05-03T02:18:53.055891013Z Done — frontend available at dist/public/
+2026-05-03T02:18:55.020376836Z ==> Uploading build...
+2026-05-03T02:19:08.725738656Z ==> Uploaded in 3.9s. Compression took 9.8s
+2026-05-03T02:19:08.759443813Z ==> Build successful 🎉
+2026-05-03T02:19:16.743569506Z ==> Deploying...
+2026-05-03T02:19:16.965977511Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-05-03T02:19:45.365034276Z ==> Running 'node artifacts/api-server/dist/index.mjs'
+2026-05-03T02:19:46.165981063Z file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:19930
+2026-05-03T02:19:46.166012325Z           throw new PathError(`Missing parameter name at index ${index}`, str);
+2026-05-03T02:19:46.166016686Z                 ^
+2026-05-03T02:19:46.166019396Z 
+2026-05-03T02:19:46.166023046Z PathError [TypeError]: Missing parameter name at index 1: *; visit https://git.new/pathToRegexpError for info
+2026-05-03T02:19:46.166028466Z     at name (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:19930:17)
+2026-05-03T02:19:46.166031257Z     at parse (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:19944:66)
+2026-05-03T02:19:46.166034287Z     at pathToRegexp (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:20086:58)
+2026-05-03T02:19:46.166036997Z     at Object.match (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:20056:32)
+2026-05-03T02:19:46.166039787Z     at matcher (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:20258:27)
+2026-05-03T02:19:46.166042528Z     at new Layer (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:20265:68)
+2026-05-03T02:19:46.166045268Z     at router4.route (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:20690:21)
+2026-05-03T02:19:46.166047988Z     at app2.route (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:20999:26)
+2026-05-03T02:19:46.166050418Z     at app2.<computed> [as get] (file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:21062:26)
+2026-05-03T02:19:46.166053108Z     at file:///opt/render/project/src/artifacts/api-server/dist/index.mjs:44495:7 {
+2026-05-03T02:19:46.166056349Z   originalPath: '*'
+2026-05-03T02:19:46.166059389Z }
+2026-05-03T02:19:46.166062199Z 
+2026-05-03T02:19:46.166065329Z Node.js v24.14.1
+2026-05-03T02:19:47.34959716Z ==> Exited with status 1
+2026-05-03T02:19:47.365151057Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
