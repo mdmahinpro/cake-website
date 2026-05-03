@@ -3,7 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, cp } from "node:fs/promises";
+import { execSync } from "node:child_process";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -12,7 +13,19 @@ const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
 async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
+  const workspaceRoot = path.resolve(artifactDir, "../..");
+  const frontendDist = path.resolve(workspaceRoot, "artifacts/sweet-dreams/dist");
+
   await rm(distDir, { recursive: true, force: true });
+
+  /* ── Step 1: build the React frontend ── */
+  console.log("Building frontend (sweet-dreams)...");
+  execSync("pnpm --filter @workspace/sweet-dreams run build", {
+    stdio: "inherit",
+    cwd: workspaceRoot,
+    env: { ...process.env, NODE_ENV: "production", BASE_PATH: "/" },
+  });
+  console.log("Frontend built.");
 
   await esbuild({
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
@@ -118,6 +131,11 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  /* ── Step 3: copy frontend build into dist/public/ ── */
+  console.log("Copying frontend into dist/public/...");
+  await cp(frontendDist, path.join(distDir, "public"), { recursive: true });
+  console.log("Done — frontend available at dist/public/");
 }
 
 buildAll().catch((err) => {

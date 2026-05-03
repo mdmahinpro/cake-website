@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import path from "path";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -30,5 +31,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+/* ─────────────────────────────────────────────────────────
+   Serve the built React frontend in production.
+   The Vite output is copied into dist/public/ at build time.
+   Any non-API route falls through to index.html (SPA mode).
+───────────────────────────────────────────────────────── */
+if (process.env.NODE_ENV === "production") {
+  const publicDir = path.join(__dirname, "public");
+  app.use(express.static(publicDir));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(publicDir, "index.html"));
+  });
+}
 
 export default app;
