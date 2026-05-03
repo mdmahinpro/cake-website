@@ -4,7 +4,6 @@ import AdminLogin from "../components/admin/AdminLogin";
 import AdminLayout, { type AdminPage as AdminPageId } from "../components/admin/AdminLayout";
 import DashboardPage from "../components/admin/DashboardPage";
 import GalleryManager from "../components/admin/GalleryManager";
-import CarouselManager from "../components/admin/CarouselManager";
 import SettingsPage from "../components/admin/SettingsPage";
 import ProductManager from "../components/admin/ProductManager";
 import SyncPanel from "../components/admin/SyncPanel";
@@ -13,8 +12,6 @@ import { useStore } from "../store/useStore";
 const PAGE_TITLES: Record<AdminPageId, string> = {
   dashboard: "Dashboard",
   products:  "Products & Menu",
-  gallery:   "Gallery Manager",
-  carousel:  "Carousel Slides",
   delivered: "Delivered Orders",
   settings:  "Settings",
   sync:      "Backend Sync",
@@ -50,8 +47,6 @@ export default function AdminPage() {
     switch (currentPage) {
       case "dashboard": return <DashboardPage onNavigate={setCurrentPage} />;
       case "products":  return <ProductManager />;
-      case "gallery":   return <GalleryManager />;
-      case "carousel":  return <CarouselManager />;
       case "delivered": return <GalleryManager filterDelivered />;
       case "settings":  return <SettingsPage />;
       case "sync":      return <SyncPanel />;

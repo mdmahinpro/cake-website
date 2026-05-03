@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import {
-  MdDashboard, MdPhoto, MdViewCarousel, MdCheckCircle,
+  MdDashboard, MdCheckCircle,
   MdSettings, MdLogout, MdOpenInNew, MdShoppingBag, MdCloudDone, MdCloudOff, MdSync,
 } from "react-icons/md";
 import { useStore, type SyncStatus } from "../../store/useStore";
 
-export type AdminPage = "dashboard" | "gallery" | "carousel" | "delivered" | "products" | "settings" | "sync";
+export type AdminPage = "dashboard" | "delivered" | "products" | "settings" | "sync";
 
 interface NavItem {
   id: AdminPage;
@@ -17,8 +17,6 @@ interface NavItem {
 const NAV: NavItem[] = [
   { id: "dashboard", label: "Dashboard",        short: "Home",      icon: MdDashboard },
   { id: "products",  label: "Products & Menu",  short: "Products",  icon: MdShoppingBag },
-  { id: "gallery",   label: "Gallery Manager",  short: "Gallery",   icon: MdPhoto },
-  { id: "carousel",  label: "Carousel Slides",  short: "Carousel",  icon: MdViewCarousel },
   { id: "delivered", label: "Delivered Orders", short: "Delivered", icon: MdCheckCircle },
   { id: "settings",  label: "Settings",         short: "Settings",  icon: MdSettings },
   { id: "sync",      label: "Backend Sync",     short: "Sync",      icon: MdCloudDone },
@@ -162,7 +160,7 @@ export default function AdminLayout({ currentPage, onNavigate, onLogout, childre
       {/* ── Mobile bottom navigation ── */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 safe-area-pb"
         style={{ background: "rgba(1,13,30,0.98)", borderTop: `1px solid ${BORDER}`, backdropFilter: "blur(16px)" }}>
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-5">
           {NAV.map(({ id, short, icon: Icon }) => {
             const active = currentPage === id;
             return (

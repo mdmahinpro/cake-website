@@ -1,6 +1,6 @@
 import {
-  MdShoppingBag, MdCategory, MdPhoto, MdCheckCircle,
-  MdStar, MdViewCarousel, MdCalendarToday,
+  MdShoppingBag, MdCategory, MdCheckCircle,
+  MdStar, MdPhoto, MdCalendarToday,
 } from "react-icons/md";
 import { useStore } from "../../store/useStore";
 import type { AdminPage } from "./AdminLayout";
@@ -27,12 +27,12 @@ interface Props { onNavigate: (page: AdminPage) => void; }
 
 export default function DashboardPage({ onNavigate }: Props) {
   const { state } = useStore();
-  const { gallery, carousel, categories, products } = state;
+  const { gallery, categories, products } = state;
 
   const delivered   = gallery.filter((g) => g.type === "delivered").length;
   const featured    = gallery.filter((g) => g.featured).length;
   const lastUpdated = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const recent      = [...gallery].reverse().slice(0, 5);
+  const recent      = gallery.filter((g) => g.type === "delivered").slice(0, 5);
 
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-5">
@@ -48,10 +48,9 @@ export default function DashboardPage({ onNavigate }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <StatCard value={products.length}   label="Menu Products"      Icon={MdShoppingBag} />
         <StatCard value={categories.length} label="Categories"         Icon={MdCategory} />
-        <StatCard value={gallery.length}    label="Gallery Items"      Icon={MdPhoto} />
         <StatCard value={delivered}         label="Delivered Orders"   Icon={MdCheckCircle} />
-        <StatCard value={featured}          label="Featured Picks"     Icon={MdStar} />
-        <StatCard value={carousel.length}   label="Carousel Slides"    Icon={MdViewCarousel} />
+        <StatCard value={featured}          label="Featured in Carousel" Icon={MdStar} />
+        <StatCard value={gallery.length}    label="Total in Gallery"   Icon={MdPhoto} />
         <StatCard value={lastUpdated}       label="Today"              Icon={MdCalendarToday} />
       </div>
 
@@ -62,23 +61,22 @@ export default function DashboardPage({ onNavigate }: Props) {
           Quick Actions
         </h3>
         <div className="flex flex-wrap gap-3">
-          <button onClick={() => onNavigate("products")} className="btn-primary text-sm">Add Product</button>
-          <button onClick={() => onNavigate("gallery")}  className="btn-primary text-sm">Add Gallery Item</button>
-          <button onClick={() => onNavigate("carousel")} className="btn-primary text-sm">Add Carousel Slide</button>
-          <button onClick={() => onNavigate("settings")} className="btn-outline text-sm">Settings</button>
+          <button onClick={() => onNavigate("delivered")} className="btn-primary text-sm">Add Delivered Order</button>
+          <button onClick={() => onNavigate("products")}  className="btn-primary text-sm">Add Product</button>
+          <button onClick={() => onNavigate("settings")}  className="btn-outline text-sm">Settings</button>
         </div>
       </div>
 
-      {/* Recent gallery items */}
+      {/* Recent delivered orders */}
       <div className="rounded-2xl p-5 flex flex-col gap-4" style={CARD}>
         <h3 className="font-playfair text-base font-bold text-white border-b pb-3"
           style={{ borderColor: "rgba(0,190,255,0.14)" }}>
-          Recent Gallery Items
+          Recent Delivered Orders
         </h3>
         {recent.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm mb-3" style={{ color: "#2a6eb5" }}>No gallery items yet.</p>
-            <button onClick={() => onNavigate("gallery")} className="btn-primary text-sm">Add Your First Cake</button>
+            <p className="text-sm mb-3" style={{ color: "#2a6eb5" }}>No delivered orders yet.</p>
+            <button onClick={() => onNavigate("delivered")} className="btn-primary text-sm">Add Your First Order</button>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -99,8 +97,8 @@ export default function DashboardPage({ onNavigate }: Props) {
                   <p className="text-sm text-white truncate">{item.caption}</p>
                   <p className="text-xs capitalize" style={{ color: "#00beff" }}>
                     {item.category}
-                    {item.featured && " · Featured"}
-                    {item.type === "delivered" && " · Delivered"}
+                    {item.featured && " · ⭐ Featured in Carousel"}
+                    {item.review && " · Has Review"}
                   </p>
                 </div>
               </div>
