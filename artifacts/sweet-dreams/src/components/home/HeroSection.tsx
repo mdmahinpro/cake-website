@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FaWhatsapp, FaFacebook, FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import SparkleField from "../shared/SparkleField";
 import FloatingParticles from "../shared/FloatingParticles";
 import AnimatedCake, { type CakeTheme } from "./AnimatedCake";
 import { useStore } from "../../store/useStore";
 import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
-import { openOrderChannel } from "../../utils/order";
 import { useT } from "../../i18n/translations";
 
 const fadeUp = (delay = 0) => ({
@@ -37,6 +37,7 @@ export default function HeroSection() {
   const tokens = THEME_TOKENS[siteTheme];
   const t = useT();
 
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [cakeTheme, setCakeTheme] = useState<CakeTheme>("vanilla");
 
@@ -46,12 +47,9 @@ export default function HeroSection() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  function handleOrder() { openOrderChannel(settings, "General inquiry", "Custom"); }
   function scrollToGallery() {
     document.getElementById("gallery-section")?.scrollIntoView({ behavior: "smooth" });
   }
-
-  const OrderIcon = settings.orderChannel === "whatsapp" ? FaWhatsapp : FaFacebook;
 
   const BADGES = [
     { label: t.hero.badge1, pos: BADGE_POSITIONS[0] },
@@ -120,11 +118,11 @@ export default function HeroSection() {
 
             <motion.div {...fadeUp(0.32)} className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <motion.button
-                onClick={handleOrder}
+                onClick={() => navigate("/products")}
                 className="btn-primary animate-pulse-soft flex items-center justify-center gap-2 min-h-[48px] w-full sm:w-auto"
                 whileTap={{ scale: 0.95 }}
               >
-                <OrderIcon size={18} />
+                <FaChevronRight size={15} />
                 {t.hero.order}
               </motion.button>
               <motion.button

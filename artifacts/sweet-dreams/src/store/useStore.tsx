@@ -49,6 +49,8 @@ export interface Settings {
   accentColor: string;
   defaultTheme: "navy" | "chocolate";
   showPrices: boolean;
+  logoUrl?: string;
+  faviconUrl?: string;
 }
 
 export interface StoreState {

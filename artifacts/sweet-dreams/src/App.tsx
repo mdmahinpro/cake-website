@@ -24,10 +24,36 @@ function ThemeSyncer() {
   return null;
 }
 
+/* Dynamically updates browser tab title and favicon from settings */
+function MetaSyncer() {
+  const { state } = useStore();
+  const { shopName, faviconUrl } = state.settings;
+
+  useEffect(() => {
+    document.title = shopName
+      ? `${shopName} | Custom Handcrafted Cakes`
+      : "Sweet Dreams Cakes | Custom Handcrafted Cakes";
+  }, [shopName]);
+
+  useEffect(() => {
+    if (!faviconUrl) return;
+    let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link") as HTMLLinkElement;
+      document.head.appendChild(link);
+    }
+    link.rel = "icon";
+    link.href = faviconUrl;
+  }, [faviconUrl]);
+
+  return null;
+}
+
 function Router() {
   return (
     <>
       <ThemeSyncer />
+      <MetaSyncer />
       <Routes>
         <Route path="/"         element={<HomePage />} />
         <Route path="/gallery"  element={<GalleryPage />} />

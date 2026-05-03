@@ -166,7 +166,7 @@ export default function SettingsPage() {
       heroTitle: "Your Dream Cake Starts Here", heroSubtitle: "Handcrafted custom cakes for every occasion",
       whatsappNumber: "8801700000000", facebookPageUrl: "https://facebook.com/yourpage",
       orderChannel: "whatsapp", instagramUrl: "", youtubeChannelUrl: "", accentColor: "#00beff",
-      defaultTheme: "navy", showPrices: true,
+      defaultTheme: "navy", showPrices: true, logoUrl: "", faviconUrl: "",
     };
     dispatch({ type: "SET_GALLERY",  payload: [] });
     dispatch({ type: "SET_CAROUSEL", payload: [] });
@@ -188,21 +188,69 @@ export default function SettingsPage() {
 
       {/* ── Shop Info ── */}
       <Card title="Shop Info">
-        <Field label="Shop Name">
+        <Field label="Shop Name" helper="Appears in the navbar and browser tab title">
           <input className="input-dark" value={form.shopName}
             onChange={e => set("shopName", e.target.value)} />
         </Field>
-        <Field label="Tagline">
-          <input className="input-dark" value={form.tagline}
-            onChange={e => set("tagline", e.target.value)} />
-        </Field>
-        <Field label="Hero Title">
-          <input className="input-dark" value={form.heroTitle}
-            onChange={e => set("heroTitle", e.target.value)} />
-        </Field>
-        <Field label="Hero Subtitle">
+        <Field label="Hero Subtitle" helper="Short description shown under the hero heading">
           <input className="input-dark" value={form.heroSubtitle}
             onChange={e => set("heroSubtitle", e.target.value)} />
+        </Field>
+
+        {/* Logo upload */}
+        <Field label="Shop Logo" helper="Replaces the default cake icon in the navbar. Square image recommended.">
+          <div className="flex items-center gap-3">
+            {form.logoUrl
+              ? <img src={form.logoUrl} alt="logo preview" className="w-10 h-10 object-contain rounded border border-white/10 bg-white/5" />
+              : <div className="w-10 h-10 rounded border border-white/10 bg-white/5 flex items-center justify-center text-caramel-400/40 text-xs">none</div>
+            }
+            <label className="btn-outline text-xs py-2 px-4 cursor-pointer">
+              {form.logoUrl ? "Change Logo" : "Upload Logo"}
+              <input type="file" accept="image/*" className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = ev => set("logoUrl", ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                  e.target.value = "";
+                }} />
+            </label>
+            {form.logoUrl && (
+              <button type="button" onClick={() => set("logoUrl", "")}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors px-2">
+                Remove
+              </button>
+            )}
+          </div>
+        </Field>
+
+        {/* Favicon upload */}
+        <Field label="Favicon" helper="Small icon shown in the browser tab. Square image recommended (PNG or ICO).">
+          <div className="flex items-center gap-3">
+            {form.faviconUrl
+              ? <img src={form.faviconUrl} alt="favicon preview" className="w-8 h-8 object-contain rounded border border-white/10 bg-white/5" />
+              : <div className="w-8 h-8 rounded border border-white/10 bg-white/5 flex items-center justify-center text-caramel-400/40 text-xs">none</div>
+            }
+            <label className="btn-outline text-xs py-2 px-4 cursor-pointer">
+              {form.faviconUrl ? "Change Favicon" : "Upload Favicon"}
+              <input type="file" accept="image/*" className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = ev => set("faviconUrl", ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                  e.target.value = "";
+                }} />
+            </label>
+            {form.faviconUrl && (
+              <button type="button" onClick={() => set("faviconUrl", "")}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors px-2">
+                Remove
+              </button>
+            )}
+          </div>
         </Field>
       </Card>
 
