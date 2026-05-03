@@ -26,7 +26,11 @@ export function getShopId(): string {
 }
 
 export function getSyncToken(): string {
-  return localStorage.getItem("sd_sync_token") || "admin123";
+  return (
+    (import.meta.env.VITE_SYNC_TOKEN as string | undefined) ||
+    localStorage.getItem("sd_sync_token") ||
+    "admin123"
+  );
 }
 
 export function isBackendConfigured(): boolean {

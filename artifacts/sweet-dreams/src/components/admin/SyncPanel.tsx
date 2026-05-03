@@ -66,7 +66,8 @@ export default function SyncPanel() {
     if (import.meta.env.VITE_API_URL) setApiUrl(import.meta.env.VITE_API_URL as string);
   }, []);
 
-  const envLocked = Boolean(import.meta.env.VITE_SHOP_ID);
+  const envLocked      = Boolean(import.meta.env.VITE_SHOP_ID);
+  const tokenEnvLocked = Boolean(import.meta.env.VITE_SYNC_TOKEN);
 
   function saveConfig() {
     localStorage.setItem("sd_shop_id",    shopId.trim());
@@ -250,10 +251,17 @@ export default function SyncPanel() {
               onChange={(e) => setToken(e.target.value)}
               placeholder="Min 8 characters recommended"
               className="input-dark"
+              disabled={tokenEnvLocked}
             />
-            <p className="text-xs" style={HINT}>
-              Set this once on first connect. Anyone with this token can overwrite the backend data.
-            </p>
+            {tokenEnvLocked ? (
+              <p className="text-xs" style={HINT}>
+                Sync token is set via the <code className="bg-white/10 px-1 rounded">VITE_SYNC_TOKEN</code> environment variable and cannot be changed here.
+              </p>
+            ) : (
+              <p className="text-xs" style={HINT}>
+                Set this once on first connect. Anyone with this token can overwrite the backend data.
+              </p>
+            )}
           </div>
         </div>
 

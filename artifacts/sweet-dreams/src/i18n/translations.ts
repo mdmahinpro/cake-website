@@ -179,7 +179,7 @@ const T = {
       contact:     "যোগাযোগ",
       facebookPage:"ফেসবুক পেজ",
       orderNow:    "অর্ডার করুন",
-      madeBy:      "TECHELY-এর সাথে ❤️ দিয়ে তৈরি —",
+      madeBy:      "তৈরি করেছে ❤️",
     },
     gallery: {
       home:     "হোম",

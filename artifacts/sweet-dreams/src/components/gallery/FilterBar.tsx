@@ -1,14 +1,7 @@
 import { useStore } from "../../store/useStore";
 import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 import { useT } from "../../i18n/translations";
-
-export function matchesFilter(
-  item: { category: string; type?: string },
-  slug: string
-): boolean {
-  if (slug === "all") return true;
-  return item.category.toLowerCase().startsWith(slug.toLowerCase());
-}
+import { matchesFilter } from "../../utils/gallery";
 
 interface FilterBarProps {
   activeFilter: string;
