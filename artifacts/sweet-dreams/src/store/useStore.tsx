@@ -222,15 +222,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable)); } catch {}
   }, [state]);
 
-  /* ── On startup: fetch from backend if configured ── */
+  /* ── On startup: fetch from backend ── */
   useEffect(() => {
-    if (!isBackendConfigured()) return;
-
     let cancelled = false;
-    isLoadingFromBackend.current = true;
-    setSyncStatus("waking");
+    const configured = isBackendConfigured(); /* true when shopId already known */
 
-    async function tryFetch(retries = 1): Promise<void> {
+    isLoadingFromBackend.current = true;
+    if (configured) setSyncStatus("waking");
+
+    async function tryFetch(retries = configured ? 1 : 0): Promise<void> {
       try {
         const data = await fetchShopData();
         if (cancelled) return;
@@ -242,7 +242,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           });
           setLastSyncedAt(Date.now());
           setSyncStatus("ok");
-        } else {
+        } else if (configured) {
           setSyncStatus("idle");
         }
       } catch {
@@ -252,7 +252,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           setSyncStatus("waking");
           await new Promise((r) => setTimeout(r, 8000));
           if (!cancelled) return tryFetch(retries - 1);
-        } else {
+        } else if (configured) {
+          /* Only show error state to explicitly-configured shops (admin device) */
           setSyncStatus("error");
           setSyncError("Could not reach backend. Using local data.");
         }

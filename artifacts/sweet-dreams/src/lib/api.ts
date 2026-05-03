@@ -38,14 +38,24 @@ export async function fetchShopData(
   signal?: AbortSignal,
 ): Promise<Record<string, unknown> | null> {
   const shopId = getShopId();
-  if (!shopId) return null;
-
   const base = getApiBase();
-  const url = `${base}/api/sd/${encodeURIComponent(shopId)}`;
 
+  if (shopId) {
+    const url = `${base}/api/sd/${encodeURIComponent(shopId)}`;
+    const res = await fetch(url, { signal, cache: "no-cache" });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { data: Record<string, unknown> };
+    return json.data ?? null;
+  }
+
+  /* No shopId saved — try the discovery endpoint to find the primary shop.
+     This lets every visitor load real content without manual configuration. */
+  const url = `${base}/api/sd`;
   const res = await fetch(url, { signal, cache: "no-cache" });
   if (!res.ok) return null;
-  const json = (await res.json()) as { data: Record<string, unknown> };
+  const json = (await res.json()) as { shopId?: string; data: Record<string, unknown> };
+  /* Cache the discovered shopId so future fetches go directly */
+  if (json.shopId) localStorage.setItem("sd_shop_id", json.shopId);
   return json.data ?? null;
 }
 

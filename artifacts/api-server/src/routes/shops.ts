@@ -5,6 +5,25 @@ import { getDb, shopsTable } from "@workspace/db";
 const router: IRouter = Router();
 
 /* ────────────────────────────────────────────────────────────
+   GET /api/sd   — discover the primary (first) shop
+   Used by visitors who don't have a shopId configured yet.
+──────────────────────────────────────────────────────────── */
+router.get("/sd", async (req, res) => {
+  try {
+    const db = getDb();
+    const rows = await db.select().from(shopsTable).limit(1);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "No shop configured yet" });
+      return;
+    }
+    res.json({ shopId: rows[0]!.id, data: rows[0]!.data, updatedAt: rows[0]!.updatedAt });
+  } catch (err) {
+    req.log.error({ err }, "GET /sd failed");
+    res.status(503).json({ error: "Database unavailable" });
+  }
+});
+
+/* ────────────────────────────────────────────────────────────
    GET /api/sd/:shopId   — public read
 ──────────────────────────────────────────────────────────── */
 router.get("/sd/:shopId", async (req, res) => {
