@@ -24,7 +24,7 @@ const pageVariants = {
 };
 
 export default function AdminPage() {
-  const { dispatch } = useStore();
+  const { state, dispatch } = useStore();
   const [authed, setAuthed] = useState(
     () => sessionStorage.getItem("cakeauth") === "true"
   );
@@ -41,7 +41,7 @@ export default function AdminPage() {
     dispatch({ type: "SET_AUTHENTICATED", payload: false });
   }
 
-  if (!authed) return <AdminLogin onSuccess={handleLogin} />;
+  if (!authed) return <AdminLogin onSuccess={handleLogin} adminPassword={state.settings.adminPassword ?? ""} />;
 
   function renderPage() {
     switch (currentPage) {

@@ -98,13 +98,14 @@ export async function fetchShopData(
 /* ── Admin: save shop data ── */
 export async function saveShopData(
   payload: Record<string, unknown>,
+  overrideToken?: string,
 ): Promise<{ ok: boolean; created?: boolean; error?: string }> {
   const shopId = getShopId();
   if (!shopId) return { ok: false, error: "Shop ID not configured" };
 
   const base = getApiBase();
   const url = `${base}/api/sd/${encodeURIComponent(shopId)}`;
-  const token = getSyncToken();
+  const token = overrideToken ?? getSyncToken();
 
   const res = await fetch(url, {
     method: "PUT",

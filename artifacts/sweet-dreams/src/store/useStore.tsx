@@ -52,6 +52,7 @@ export interface Settings {
   showPrices: boolean;
   logoUrl?: string;
   faviconUrl?: string;
+  adminPassword?: string;
 }
 
 export interface StoreState {

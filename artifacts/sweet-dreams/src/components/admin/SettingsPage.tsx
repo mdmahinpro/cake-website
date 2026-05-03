@@ -145,11 +145,13 @@ export default function SettingsPage() {
   function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
     setPwError("");
-    const stored = envPassword || localStorage.getItem("sd_admin_password") || "admin123";
+    const stored = envPassword || state.settings.adminPassword || localStorage.getItem("sd_admin_password") || "admin123";
     if (currentPw !== stored)  { setPwError("Current password is incorrect"); return; }
     if (newPw.length < 6)      { setPwError("New password must be at least 6 characters"); return; }
     if (newPw !== confirmPw)   { setPwError("Passwords do not match"); return; }
+    dispatch({ type: "SET_SETTINGS", payload: { ...state.settings, adminPassword: newPw } });
     localStorage.setItem("sd_admin_password", newPw);
+    manualSync();
     setCurrentPw(""); setNewPw(""); setConfirmPw("");
     setPwSaved(true); setTimeout(() => setPwSaved(false), 2500);
   }
@@ -448,8 +450,7 @@ export default function SettingsPage() {
           <form onSubmit={handlePasswordChange} className="flex flex-col gap-3">
             <div className="p-3 rounded-xl text-xs leading-relaxed"
               style={{ background: "rgba(0,190,255,0.05)", border: "1px solid rgba(0,190,255,0.15)", color: "#7dd3fc" }}>
-              This password is saved to <strong className="text-white">this browser only</strong>.
-              To set a password that works on all devices, add <code className="bg-white/10 px-1 rounded">VITE_ADMIN_PASSWORD</code> as an environment variable on Render.
+              The new password is saved to the <strong className="text-white">database</strong> and synced to all devices automatically.
             </div>
             <Field label="Current Password">
               <input type="password" className="input-dark" value={currentPw}
@@ -470,7 +471,7 @@ export default function SettingsPage() {
               )}
               {pwSaved && (
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="text-green-400 text-sm">Password updated on this device</motion.p>
+                  className="text-green-400 text-sm">Password updated — synced to all devices</motion.p>
               )}
             </AnimatePresence>
             <button type="submit" className="btn-primary w-full sm:w-fit text-sm">
