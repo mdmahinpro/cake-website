@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MdEdit, MdDelete, MdCheckCircle, MdClose, MdAdd, MdPhoto } from "react-icons/md";
 import { useStore, type ProductCategory, type Product } from "../../store/useStore";
 
+function formatPrice(p: string): string {
+  const t = p.trim();
+  return t.startsWith("৳") ? t : "৳" + t;
+}
+
 const GRADIENTS = [
   { label: "Dark Chocolate", value: "from-choco-800 to-choco-600" },
   { label: "Warm Amber",     value: "from-amber-900 to-yellow-800" },
@@ -364,7 +369,7 @@ function ProductManagerTab() {
                 <div className="p-3 flex flex-col gap-1">
                   <p className="text-xs font-semibold text-white truncate">{form.name || "Product name..."}</p>
                   {form.price && settings.showPrices && (
-                    <p className="text-xs font-bold" style={{ color: "#00beff" }}>{form.price}</p>
+                    <p className="text-xs font-bold" style={{ color: "#00beff" }}>{formatPrice(form.price)}</p>
                   )}
                   <p className="text-xs line-clamp-2" style={HINT}>{form.caption || "Caption..."}</p>
                 </div>
@@ -410,7 +415,7 @@ function ProductManagerTab() {
                 <div className="px-2 pt-1.5 pb-2 flex flex-col gap-0.5" style={{ background: "#051e36" }}>
                   <p className="text-xs text-white truncate font-medium">{product.name}</p>
                   {product.price && (
-                    <p className="text-[11px] font-bold" style={{ color: "#00beff" }}>{product.price}</p>
+                    <p className="text-[11px] font-bold" style={{ color: "#00beff" }}>{formatPrice(product.price)}</p>
                   )}
                   <div className="flex items-center justify-end gap-1 pt-0.5">
                     <button onClick={() => handleEdit(product)} className="p-1 transition-colors" style={{ color: "#4dd9ff" }}><MdEdit size={16} /></button>

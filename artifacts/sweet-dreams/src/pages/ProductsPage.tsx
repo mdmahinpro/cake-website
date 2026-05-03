@@ -11,6 +11,11 @@ import { useStore } from "../store/useStore";
 import { useTheme, THEME_TOKENS } from "../context/ThemeContext";
 import { useT } from "../i18n/translations";
 
+function formatPrice(p: string): string {
+  const t = p.trim();
+  return t.startsWith("৳") ? t : "৳" + t;
+}
+
 export default function ProductsPage() {
   const { state } = useStore();
   const { categories, products, settings } = state;
@@ -147,7 +152,7 @@ export default function ProductsPage() {
                         {settings.showPrices && product.price && (
                           <p className="text-sm font-bold mb-1 font-hind"
                             style={{ color: tokens.accentHex }}>
-                            {product.price}
+                            {formatPrice(product.price)}
                           </p>
                         )}
                         <p className="text-xs text-caramel-300 leading-relaxed line-clamp-2 font-hind">
