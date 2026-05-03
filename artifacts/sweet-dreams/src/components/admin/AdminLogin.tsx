@@ -6,8 +6,8 @@ import SparkleField from "../shared/SparkleField";
 
 function getAdminPassword() {
   return (
+    (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ||
     localStorage.getItem("sd_admin_password") ||
-    import.meta.env.VITE_ADMIN_PASSWORD ||
     "admin123"
   );
 }

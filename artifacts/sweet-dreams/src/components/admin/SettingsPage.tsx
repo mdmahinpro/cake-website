@@ -113,11 +113,12 @@ export default function SettingsPage() {
     setTheme(theme);
   }
 
+  const envPassword = import.meta.env.VITE_ADMIN_PASSWORD as string | undefined;
+
   function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
     setPwError("");
-    const stored = localStorage.getItem("sd_admin_password") ||
-      import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
+    const stored = envPassword || localStorage.getItem("sd_admin_password") || "admin123";
     if (currentPw !== stored)  { setPwError("Current password is incorrect"); return; }
     if (newPw.length < 6)      { setPwError("New password must be at least 6 characters"); return; }
     if (newPw !== confirmPw)   { setPwError("Passwords do not match"); return; }
@@ -317,33 +318,64 @@ export default function SettingsPage() {
 
       {/* ── Admin Password ── */}
       <Card title="Admin Password">
-        <form onSubmit={handlePasswordChange} className="flex flex-col gap-3">
-          <Field label="Current Password">
-            <input type="password" className="input-dark" value={currentPw}
-              onChange={e => setCurrentPw(e.target.value)} placeholder="Current password" autoComplete="current-password" />
-          </Field>
-          <Field label="New Password">
-            <input type="password" className="input-dark" value={newPw}
-              onChange={e => setNewPw(e.target.value)} placeholder="Min 6 characters" autoComplete="new-password" />
-          </Field>
-          <Field label="Confirm New Password">
-            <input type="password" className="input-dark" value={confirmPw}
-              onChange={e => setConfirmPw(e.target.value)} placeholder="Repeat new password" autoComplete="new-password" />
-          </Field>
-          <AnimatePresence>
-            {pwError && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="text-red-400 text-sm">{pwError}</motion.p>
-            )}
-            {pwSaved && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="text-green-400 text-sm">Password updated</motion.p>
-            )}
-          </AnimatePresence>
-          <button type="submit" className="btn-primary w-full sm:w-fit text-sm">
-            Update Password
-          </button>
-        </form>
+        {envPassword ? (
+          <div className="flex flex-col gap-3">
+            <div className="p-3 rounded-xl text-xs leading-relaxed"
+              style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", color: "#fde68a" }}>
+              <p className="font-semibold mb-1">Password set via environment variable</p>
+              <p style={{ color: "#fcd34d" }}>
+                <code className="bg-white/10 px-1 rounded">VITE_ADMIN_PASSWORD</code> is active.
+                To change the password, update that variable in your Render / Replit environment and redeploy.
+                The form below is disabled while an environment variable is set.
+              </p>
+            </div>
+            <form className="flex flex-col gap-3 opacity-40 pointer-events-none select-none" aria-hidden>
+              <Field label="Current Password">
+                <input type="password" className="input-dark" disabled placeholder="Set via environment variable" />
+              </Field>
+              <Field label="New Password">
+                <input type="password" className="input-dark" disabled placeholder="Set via environment variable" />
+              </Field>
+              <Field label="Confirm New Password">
+                <input type="password" className="input-dark" disabled placeholder="Set via environment variable" />
+              </Field>
+              <button type="button" disabled className="btn-primary w-full sm:w-fit text-sm">Update Password</button>
+            </form>
+          </div>
+        ) : (
+          <form onSubmit={handlePasswordChange} className="flex flex-col gap-3">
+            <div className="p-3 rounded-xl text-xs leading-relaxed"
+              style={{ background: "rgba(0,190,255,0.05)", border: "1px solid rgba(0,190,255,0.15)", color: "#7dd3fc" }}>
+              This password is saved to <strong className="text-white">this browser only</strong>.
+              To set a password that works on all devices, add <code className="bg-white/10 px-1 rounded">VITE_ADMIN_PASSWORD</code> as an environment variable on Render.
+            </div>
+            <Field label="Current Password">
+              <input type="password" className="input-dark" value={currentPw}
+                onChange={e => setCurrentPw(e.target.value)} placeholder="Current password" autoComplete="current-password" />
+            </Field>
+            <Field label="New Password">
+              <input type="password" className="input-dark" value={newPw}
+                onChange={e => setNewPw(e.target.value)} placeholder="Min 6 characters" autoComplete="new-password" />
+            </Field>
+            <Field label="Confirm New Password">
+              <input type="password" className="input-dark" value={confirmPw}
+                onChange={e => setConfirmPw(e.target.value)} placeholder="Repeat new password" autoComplete="new-password" />
+            </Field>
+            <AnimatePresence>
+              {pwError && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="text-red-400 text-sm">{pwError}</motion.p>
+              )}
+              {pwSaved && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="text-green-400 text-sm">Password updated on this device</motion.p>
+              )}
+            </AnimatePresence>
+            <button type="submit" className="btn-primary w-full sm:w-fit text-sm">
+              Update Password
+            </button>
+          </form>
+        )}
       </Card>
 
       {/* ── Data Management ── */}
