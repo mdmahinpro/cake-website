@@ -76,7 +76,7 @@ const T = {
       contact:     "Contact",
       facebookPage:"Facebook Page",
       orderNow:    "Order Now",
-      madeBy:      "Made with ❤️ by TECHELY",
+      madeBy:      "Made with ❤️ by",
     },
     gallery: {
       home:     "Home",
@@ -179,7 +179,7 @@ const T = {
       contact:     "যোগাযোগ",
       facebookPage:"ফেসবুক পেজ",
       orderNow:    "অর্ডার করুন",
-      madeBy:      "TECHELY-এর সাথে ❤️ দিয়ে তৈরি",
+      madeBy:      "TECHELY-এর সাথে ❤️ দিয়ে তৈরি —",
     },
     gallery: {
       home:     "হোম",

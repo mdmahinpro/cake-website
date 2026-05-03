@@ -105,7 +105,11 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-caramel-800/20 py-4 px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-choco-400 font-hind">
-          © 2025 {settings.shopName}. {t.footer.madeBy}
+          © {new Date().getFullYear()} {settings.shopName}. {t.footer.madeBy}{" "}
+          <a href="https://www.techely.com" target="_blank" rel="noopener noreferrer"
+            className="text-caramel-400 hover:text-caramel-300 transition-colors duration-200 font-semibold">
+            TECHELY
+          </a>
         </p>
       </div>
     </footer>
