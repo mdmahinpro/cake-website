@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StoreProvider, useStore } from "./store/useStore";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
@@ -24,20 +24,16 @@ function ThemeSyncer() {
   return null;
 }
 
-/* Dynamically updates browser tab title and favicon from settings */
+/* Dynamically updates browser tab title and favicon from settings.
+   Title is set directly in the render body so it is ALWAYS in sync
+   with the current store state — no effect/dep-comparison lag. */
 function MetaSyncer() {
   const { state } = useStore();
-  const { settings } = state;
-  const { shopName, faviconUrl } = settings;
+  const { shopName, faviconUrl } = state.settings;
 
-  /* useLayoutEffect fires before paint — title update is immediate and
-     also re-runs whenever the settings object reference changes (e.g.
-     after a LOAD_STATE from the database), not just when shopName string changes */
-  useLayoutEffect(() => {
-    document.title = shopName
-      ? `${shopName} | Custom Handcrafted Cakes`
-      : "Sweet Dreams Cakes | Custom Handcrafted Cakes";
-  }, [settings]);
+  document.title = shopName
+    ? `${shopName} | Custom Handcrafted Cakes`
+    : "Sweet Dreams Cakes | Custom Handcrafted Cakes";
 
   useEffect(() => {
     if (!faviconUrl) return;

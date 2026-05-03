@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useStore, type Settings } from "../../store/useStore";
+import { useStore, type Settings, type CakeItem, type CarouselSlide, type ProductCategory, type Product } from "../../store/useStore";
 import { useTheme, type SiteTheme } from "../../context/ThemeContext";
 import { DEMO_GALLERY, DEMO_CAROUSEL, DEMO_PRODUCT_CATEGORIES, DEMO_PRODUCTS } from "../../data/demoData";
 
@@ -81,11 +81,13 @@ function SaveToast({ visible }: { visible: boolean }) {
 }
 
 export default function SettingsPage() {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, manualSync } = useStore();
   const { setTheme } = useTheme();
   const [form, setForm] = useState<Settings>({ ...state.settings });
   const [saved, setSaved] = useState(false);
   const [clearConfirm, setClearConfirm] = useState(false);
+  const [importMsg, setImportMsg] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const importRef = useRef<HTMLInputElement>(null);
   const isFirstRender = useRef(true);
 
   const [currentPw, setCurrentPw] = useState("");
@@ -128,23 +130,52 @@ export default function SettingsPage() {
   }
 
   function handleExport() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const { isAuthenticated: _, ...data } = state;
+    const blob = new Blob(
+      [JSON.stringify({ ...data, exportedAt: new Date().toISOString() }, null, 2)],
+      { type: "application/json" },
+    );
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "sweet-dreams-data.json"; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sweet-dreams-backup.json";
+    a.click();
     URL.revokeObjectURL(url);
   }
 
   function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const parsed = JSON.parse(ev.target?.result as string);
-        if (parsed.settings) { dispatch({ type: "SET_SETTINGS", payload: parsed.settings }); setForm(parsed.settings); }
-        if (parsed.gallery)  dispatch({ type: "SET_GALLERY",  payload: parsed.gallery });
-        if (parsed.carousel) dispatch({ type: "SET_CAROUSEL", payload: parsed.carousel });
-        alert("Data imported successfully!");
-      } catch { alert("Invalid JSON file"); }
+        const parsed = JSON.parse(ev.target?.result as string) as Record<string, unknown>;
+        if (!parsed["settings"] || !Array.isArray(parsed["gallery"])) {
+          setImportMsg({ kind: "error", text: "Invalid backup file. Make sure you're importing a Sweet Dreams backup." });
+          setTimeout(() => setImportMsg(null), 6000);
+          return;
+        }
+        dispatch({
+          type: "LOAD_STATE",
+          payload: {
+            settings:        parsed["settings"]                            as Settings,
+            gallery:         Array.isArray(parsed["gallery"])    ? parsed["gallery"]    as CakeItem[]        : [],
+            carousel:        Array.isArray(parsed["carousel"])   ? parsed["carousel"]   as CarouselSlide[]   : [],
+            categories:      Array.isArray(parsed["categories"]) ? parsed["categories"] as ProductCategory[] : [],
+            products:        Array.isArray(parsed["products"])   ? parsed["products"]   as Product[]         : [],
+            isAuthenticated: true,
+          },
+        });
+        setForm(parsed["settings"] as Settings);
+        manualSync();
+        setImportMsg({ kind: "ok", text: "All data restored successfully — gallery, products, settings and categories." });
+        setSaved(true);
+        setTimeout(() => { setImportMsg(null); setSaved(false); }, 6000);
+      } catch {
+        setImportMsg({ kind: "error", text: "Could not read the file. Make sure it is a valid Sweet Dreams backup." });
+        setTimeout(() => setImportMsg(null), 6000);
+      }
     };
     reader.readAsText(file);
   }
@@ -439,14 +470,36 @@ export default function SettingsPage() {
         </div>
 
         {/* Export / import */}
-        <div className="flex flex-wrap gap-3">
-          <button onClick={handleExport} className="btn-outline text-sm py-2.5 px-5">
-            Export JSON
-          </button>
-          <label className="btn-outline text-sm py-2.5 px-5 cursor-pointer">
-            Import JSON
-            <input type="file" accept=".json" className="hidden" onChange={handleImport} />
-          </label>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            <button onClick={handleExport} className="btn-outline text-sm py-2.5 px-5">
+              ↓ Export Backup
+            </button>
+            <button onClick={() => importRef.current?.click()} className="btn-outline text-sm py-2.5 px-5">
+              ↑ Import Backup
+            </button>
+            <input ref={importRef} type="file" accept="application/json,.json" className="hidden" onChange={handleImport} />
+          </div>
+          <AnimatePresence>
+            {importMsg && (
+              <motion.div
+                key="import-msg"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.25 }}
+                className="text-sm px-4 py-3 rounded-xl flex items-center gap-2"
+                style={{
+                  background: importMsg.kind === "ok" ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.10)",
+                  border: `1px solid ${importMsg.kind === "ok" ? "rgba(34,197,94,0.28)" : "rgba(239,68,68,0.28)"}`,
+                  color: importMsg.kind === "ok" ? "#4ade80" : "#f87171",
+                }}
+              >
+                <span>{importMsg.kind === "ok" ? "✓" : "✗"}</span>
+                {importMsg.text}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Clear all */}
