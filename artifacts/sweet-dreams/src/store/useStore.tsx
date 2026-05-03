@@ -172,25 +172,25 @@ function reducer(state: StoreState, action: Action): StoreState {
     };
     case "SET_SETTINGS": return { ...state, settings: { ...state.settings, ...action.payload } };
     case "SET_GALLERY": return { ...state, gallery: action.payload };
-    case "ADD_GALLERY_ITEM": return { ...state, gallery: [...state.gallery, action.payload] };
+    case "ADD_GALLERY_ITEM": return { ...state, gallery: [action.payload, ...state.gallery] };
     case "UPDATE_GALLERY_ITEM":
       return { ...state, gallery: state.gallery.map((i) => i.id === action.payload.id ? action.payload : i) };
     case "DELETE_GALLERY_ITEM":
       return { ...state, gallery: state.gallery.filter((i) => i.id !== action.payload) };
     case "SET_CAROUSEL": return { ...state, carousel: action.payload };
-    case "ADD_CAROUSEL_SLIDE": return { ...state, carousel: [...state.carousel, action.payload] };
+    case "ADD_CAROUSEL_SLIDE": return { ...state, carousel: [action.payload, ...state.carousel] };
     case "UPDATE_CAROUSEL_SLIDE":
       return { ...state, carousel: state.carousel.map((s) => s.id === action.payload.id ? action.payload : s) };
     case "DELETE_CAROUSEL_SLIDE":
       return { ...state, carousel: state.carousel.filter((s) => s.id !== action.payload) };
     case "SET_CATEGORIES": return { ...state, categories: action.payload };
-    case "ADD_CATEGORY": return { ...state, categories: [...state.categories, action.payload] };
+    case "ADD_CATEGORY": return { ...state, categories: [action.payload, ...state.categories] };
     case "UPDATE_CATEGORY":
       return { ...state, categories: state.categories.map((c) => c.id === action.payload.id ? action.payload : c) };
     case "DELETE_CATEGORY":
       return { ...state, categories: state.categories.filter((c) => c.id !== action.payload) };
     case "SET_PRODUCTS": return { ...state, products: action.payload };
-    case "ADD_PRODUCT": return { ...state, products: [...state.products, action.payload] };
+    case "ADD_PRODUCT": return { ...state, products: [action.payload, ...state.products] };
     case "UPDATE_PRODUCT":
       return { ...state, products: state.products.map((p) => p.id === action.payload.id ? action.payload : p) };
     case "DELETE_PRODUCT":
