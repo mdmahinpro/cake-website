@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { getDb, shopsTable } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -11,7 +11,7 @@ const router: IRouter = Router();
 router.get("/sd", async (req, res) => {
   try {
     const db = getDb();
-    const rows = await db.select().from(shopsTable).limit(1);
+    const rows = await db.select().from(shopsTable).orderBy(desc(shopsTable.updatedAt)).limit(1);
     if (rows.length === 0) {
       res.status(404).json({ error: "No shop configured yet" });
       return;
