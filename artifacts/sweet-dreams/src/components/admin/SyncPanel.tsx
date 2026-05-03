@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MdCloudDone, MdCloudOff, MdSync, MdInfo,
-  MdCheckCircle, MdError, MdOpenInNew, MdContentCopy,
+  MdCheckCircle, MdError,
 } from "react-icons/md";
 import { FaServer } from "react-icons/fa";
 import { useStore } from "../../store/useStore";
@@ -38,21 +38,6 @@ function StatusDot({ status }: { status: "ok" | "error" | "syncing" | "idle" | "
   );
 }
 
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  function copy() {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true); setTimeout(() => setCopied(false), 2000);
-    });
-  }
-  return (
-    <button onClick={copy} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors"
-      style={{ border: "1px solid rgba(0,190,255,0.2)", color: copied ? "#22c55e" : "#4dd9ff" }}>
-      <MdContentCopy size={13} />
-      {copied ? "Copied!" : "Copy"}
-    </button>
-  );
-}
 
 function InfoBox({ children }: { children: React.ReactNode }) {
   return (
@@ -306,109 +291,12 @@ export default function SyncPanel() {
         </AnimatePresence>
       </div>
 
-      {/* ── Render Setup Guide ── */}
-      <div className="rounded-2xl p-5 flex flex-col gap-4" style={CARD}>
-        <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: "rgba(0,190,255,0.14)" }}>
-          <FaServer size={16} style={ACCENT} />
-          <h3 className="font-playfair text-base font-bold text-white">Render Setup (one-time)</h3>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {[
-            {
-              n: 1,
-              title: "Create a Render account",
-              body: <>Go to <a href="https://render.com" target="_blank" rel="noreferrer"
-                className="underline" style={ACCENT}>render.com</a> and sign up for free.</>,
-            },
-            {
-              n: 2,
-              title: "Create a PostgreSQL database",
-              body: "Dashboard \u2192 New \u2192 PostgreSQL \u2192 free tier \u2192 create. Copy the Internal Database URL from the info panel.",
-            },
-            {
-              n: 3,
-              title: "Deploy this API server as a Web Service",
-              body: <>Dashboard → New → Web Service → connect your repo → Root Directory: <code className="bg-white/10 px-1 rounded">artifacts/api-server</code> → Build: <code className="bg-white/10 px-1 rounded">pnpm run build</code> → Start: <code className="bg-white/10 px-1 rounded">node dist/index.mjs</code></>,
-            },
-            {
-              n: 4,
-              title: "Set environment variables on Render",
-              body: (
-                <div className="flex flex-col gap-1.5 mt-1">
-                  {[
-                    ["DATABASE_URL", "The PostgreSQL URL from step 2"],
-                    ["PORT",         "10000  (Render assigns this automatically)"],
-                    ["NODE_ENV",     "production"],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex items-center gap-2">
-                      <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs text-white">{k}</code>
-                      <span className="text-xs" style={HINT}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              ),
-            },
-            {
-              n: 5,
-              title: "Run the database migration",
-              body: (
-                <>
-                  After your first deploy, in your terminal run:
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <code className="bg-white/10 px-2 py-1 rounded text-xs text-white flex-1">
-                      DATABASE_URL=&lt;your-url&gt; pnpm --filter @workspace/db run push
-                    </code>
-                    <CopyButton value="pnpm --filter @workspace/db run push" />
-                  </div>
-                </>
-              ),
-            },
-            {
-              n: 6,
-              title: "Enter your Render URL above and Connect",
-              body: "Copy the URL from your Render Web Service dashboard (e.g. https://my-cake-api.onrender.com), paste it in the API URL field above, set a shop ID and token, then click Connect & Test.",
-            },
-          ].map(({ n, title, body }) => (
-            <div key={n} className="flex gap-4">
-              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ background: "rgba(0,190,255,0.15)", border: "1.5px solid rgba(0,190,255,0.4)", color: "#00beff" }}>
-                {n}
-              </div>
-              <div className="flex-1 pb-4 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                <p className="text-white font-semibold text-sm mb-1">{title}</p>
-                <div className="text-xs leading-relaxed" style={HINT}>{body}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <InfoBox>
-          <strong className="text-white">Render free tier</strong> — services spin down after 15 minutes of inactivity.
-          The first visitor after a quiet period may wait ~30s while the server wakes up. A loading indicator appears automatically.
-          Paid Render plans ($7/mo) keep it always on if needed for clients.
-        </InfoBox>
-      </div>
-
-      {/* ── Multi-client workflow ── */}
-      <div className="rounded-2xl p-4 flex flex-col gap-2"
-        style={{ background: "rgba(0,190,255,0.03)", border: "1px solid rgba(0,190,255,0.12)" }}>
-        <div className="flex items-center gap-2 mb-1">
-          <MdOpenInNew size={14} style={ACCENT} />
-          <p className="text-xs font-bold uppercase tracking-widest" style={HINT}>Building for multiple clients?</p>
-        </div>
-        {[
-          "Deploy the API to Render once — it serves all your clients' shops",
-          "Each client website gets a unique Shop ID (e.g. sweet-dreams-dhaka, rosette-bakery)",
-          "Set VITE_SHOP_ID in Replit secrets before building each client's frontend",
-          "The admin panel on each site syncs only to that client's shop data",
-          "Clients update their site from any device, and all visitors see changes instantly",
-        ].map((line) => (
-          <div key={line} className="flex items-start gap-2 text-xs" style={{ color: "#7dd3fc" }}>
-            <span style={ACCENT}>›</span> {line}
-          </div>
-        ))}
-      </div>
+      {/* ── Quick help ── */}
+      <InfoBox>
+        <strong className="text-white">First time?</strong> See the <code className="bg-white/10 px-1 rounded">README.md</code> in
+        the GitHub repo for the full Render setup guide — database, deployment, and how to connect this panel.
+        On the free tier the server sleeps after 15 min of no traffic; the first visitor may wait ~30s to wake it.
+      </InfoBox>
 
       {/* ── Current sync token reminder ── */}
       {configured && (
