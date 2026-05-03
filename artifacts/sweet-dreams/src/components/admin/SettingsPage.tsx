@@ -165,7 +165,7 @@ export default function SettingsPage() {
       heroTitle: "Your Dream Cake Starts Here", heroSubtitle: "Handcrafted custom cakes for every occasion",
       whatsappNumber: "8801700000000", facebookPageUrl: "https://facebook.com/yourpage",
       orderChannel: "whatsapp", instagramUrl: "", youtubeChannelUrl: "", accentColor: "#00beff",
-      defaultTheme: "navy",
+      defaultTheme: "navy", showPrices: true,
     };
     dispatch({ type: "SET_GALLERY",  payload: [] });
     dispatch({ type: "SET_CAROUSEL", payload: [] });
@@ -261,7 +261,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* ── Appearance / Default Theme ── */}
-      <Card title="Appearance">
+      <Card title="Appearance & Display">
         <p className="text-xs" style={{ color: "#2a6eb5" }}>
           This sets the default theme for all visitors. A visitor can still switch it manually using the toggle on the public site.
         </p>
@@ -295,6 +295,24 @@ export default function SettingsPage() {
             Default theme: <strong>{isNavy ? "Navy" : "Chocolate"}</strong> — applied instantly to the public site
           </motion.div>
         </AnimatePresence>
+
+        {/* Show Prices toggle */}
+        <div className="flex items-center justify-between gap-4 p-4 rounded-2xl"
+          style={{ background: "rgba(1,13,30,0.6)", border: "1px solid rgba(0,190,255,0.12)" }}>
+          <div>
+            <p className="text-sm font-semibold text-white">Show Product Prices</p>
+            <p className="text-xs mt-0.5" style={{ color: "#2a6eb5" }}>
+              {form.showPrices
+                ? "Prices are visible on the public site"
+                : "Prices are hidden from the public site"}
+            </p>
+          </div>
+          <Toggle
+            on={form.showPrices ?? true}
+            onToggle={() => set("showPrices", !(form.showPrices ?? true))}
+            size="lg"
+          />
+        </div>
       </Card>
 
       {/* ── Admin Password ── */}

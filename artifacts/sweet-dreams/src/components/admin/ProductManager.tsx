@@ -158,14 +158,18 @@ interface ProductForm {
   name: string;
   categoryId: string;
   caption: string;
+  price: string;
 }
 
 function ProductManagerTab() {
   const { state, dispatch } = useStore();
-  const { products, categories } = state;
+  const { products, categories, settings } = state;
 
   const defaultCat = categories[0]?.id ?? "";
-  const DEFAULT_FORM: ProductForm = { imageSource: "upload", imageUrl: "", imageBase64: "", name: "", categoryId: defaultCat, caption: "" };
+  const DEFAULT_FORM: ProductForm = {
+    imageSource: "upload", imageUrl: "", imageBase64: "",
+    name: "", categoryId: defaultCat, caption: "", price: "",
+  };
 
   const [form, setForm]           = useState<ProductForm>({ ...DEFAULT_FORM, categoryId: defaultCat });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -200,6 +204,7 @@ function ProductManagerTab() {
       id: editingId || `prod_${Date.now()}`,
       name: form.name.trim(), categoryId: form.categoryId,
       caption: form.caption, imageUrl: finalImage,
+      price: form.price.trim() || undefined,
     };
     if (editingId) { dispatch({ type: "UPDATE_PRODUCT", payload: product }); }
     else           { dispatch({ type: "ADD_PRODUCT",    payload: product }); }
@@ -214,6 +219,7 @@ function ProductManagerTab() {
       imageUrl:    p.imageUrl.startsWith("data:") ? "" : p.imageUrl,
       imageBase64: p.imageUrl.startsWith("data:") ? p.imageUrl : "",
       name: p.name, categoryId: p.categoryId, caption: p.caption,
+      price: p.price ?? "",
     });
   }
 
@@ -293,6 +299,22 @@ function ProductManagerTab() {
                 )}
               </div>
 
+              {/* Price */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium" style={LBL}>
+                  Price <span className="text-xs" style={HINT}>(optional — e.g. ৳500, ৳500–800, From ৳600)</span>
+                </label>
+                <input value={form.price}
+                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                  placeholder="e.g. ৳800 or From ৳500"
+                  className="input-dark" />
+                {!settings.showPrices && (
+                  <p className="text-xs" style={{ color: "#f59e0b" }}>
+                    ⚠ Price display is currently OFF in Settings → Appearance. Enable it for prices to appear on the public site.
+                  </p>
+                )}
+              </div>
+
               {/* Caption */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium" style={LBL}>Caption / Description</label>
@@ -339,11 +361,17 @@ function ProductManagerTab() {
                     </span>
                   )}
                 </div>
-                <div className="p-3">
+                <div className="p-3 flex flex-col gap-1">
                   <p className="text-xs font-semibold text-white truncate">{form.name || "Product name..."}</p>
-                  <p className="text-xs line-clamp-2 mt-1" style={HINT}>{form.caption || "Caption..."}</p>
+                  {form.price && settings.showPrices && (
+                    <p className="text-xs font-bold" style={{ color: "#00beff" }}>{form.price}</p>
+                  )}
+                  <p className="text-xs line-clamp-2" style={HINT}>{form.caption || "Caption..."}</p>
                 </div>
               </div>
+              {form.price && !settings.showPrices && (
+                <p className="text-[10px] text-amber-400/70 text-center">Price hidden (toggle in Settings)</p>
+              )}
             </div>
           </div>
         </form>
@@ -379,9 +407,12 @@ function ProductManagerTab() {
                     {categories.find((c) => c.id === product.categoryId)?.name ?? "—"}
                   </span>
                 </div>
-                <div className="p-2 flex items-center justify-between gap-1" style={{ background: "#051e36" }}>
-                  <p className="text-xs text-white truncate flex-1">{product.name}</p>
-                  <div className="flex gap-1 flex-shrink-0">
+                <div className="px-2 pt-1.5 pb-2 flex flex-col gap-0.5" style={{ background: "#051e36" }}>
+                  <p className="text-xs text-white truncate font-medium">{product.name}</p>
+                  {product.price && (
+                    <p className="text-[11px] font-bold" style={{ color: "#00beff" }}>{product.price}</p>
+                  )}
+                  <div className="flex items-center justify-end gap-1 pt-0.5">
                     <button onClick={() => handleEdit(product)} className="p-1 transition-colors" style={{ color: "#4dd9ff" }}><MdEdit size={16} /></button>
                     <button onClick={() => setDeleteTarget(product.id)} className="p-1 text-red-400 hover:text-red-300 transition-colors"><MdDelete size={16} /></button>
                   </div>
@@ -430,6 +461,7 @@ export default function ProductManager() {
       <div className="rounded-2xl p-4 text-sm" style={{ background: "rgba(0,190,255,0.06)", border: "1px solid rgba(0,190,255,0.18)", color: "#4dd9ff" }}>
         Manage the <strong className="text-white">categories</strong> and <strong className="text-white">products</strong> shown on the <em>Our Menu</em> page.
         The <strong className="text-white">Product Name</strong> is used as the order item name when customers tap "Order".
+        Toggle price visibility in <strong className="text-white">Settings → Appearance</strong>.
       </div>
 
       {/* Tab switcher */}

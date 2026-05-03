@@ -13,7 +13,7 @@ import { useT } from "../i18n/translations";
 
 export default function ProductsPage() {
   const { state } = useStore();
-  const { categories, products } = state;
+  const { categories, products, settings } = state;
   const { siteTheme } = useTheme();
   const tokens = THEME_TOKENS[siteTheme];
   const t = useT();
@@ -144,6 +144,12 @@ export default function ProductsPage() {
                         <h3 className="font-playfair text-base font-bold text-white leading-snug mb-1">
                           {product.name}
                         </h3>
+                        {settings.showPrices && product.price && (
+                          <p className="text-sm font-bold mb-1 font-hind"
+                            style={{ color: tokens.accentHex }}>
+                            {product.price}
+                          </p>
+                        )}
                         <p className="text-xs text-caramel-300 leading-relaxed line-clamp-2 font-hind">
                           {product.caption}
                         </p>

@@ -32,6 +32,7 @@ export interface Product {
   categoryId: string;
   caption: string;
   imageUrl: string;
+  price?: string;
 }
 
 export interface Settings {
@@ -46,6 +47,7 @@ export interface Settings {
   youtubeChannelUrl: string;
   accentColor: string;
   defaultTheme: "navy" | "chocolate";
+  showPrices: boolean;
 }
 
 export interface StoreState {
@@ -90,6 +92,7 @@ const defaultSettings: Settings = {
   youtubeChannelUrl: "",
   accentColor: "#d4a574",
   defaultTheme: "navy",
+  showPrices: true,
 };
 
 const defaultState: StoreState = {
