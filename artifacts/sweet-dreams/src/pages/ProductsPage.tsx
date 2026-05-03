@@ -154,7 +154,7 @@ export default function ProductsPage() {
                           {product.caption}
                         </p>
                       </div>
-                      <OrderButton caption={product.name} category={product.categoryId} size="md" />
+                      <OrderButton caption={product.name} category={categories.find((c) => c.id === product.categoryId)?.name} size="md" />
                     </div>
                   </motion.div>
                 </AnimatedSection>
