@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StoreProvider, useStore } from "./store/useStore";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
@@ -27,13 +27,17 @@ function ThemeSyncer() {
 /* Dynamically updates browser tab title and favicon from settings */
 function MetaSyncer() {
   const { state } = useStore();
-  const { shopName, faviconUrl } = state.settings;
+  const { settings } = state;
+  const { shopName, faviconUrl } = settings;
 
-  useEffect(() => {
+  /* useLayoutEffect fires before paint — title update is immediate and
+     also re-runs whenever the settings object reference changes (e.g.
+     after a LOAD_STATE from the database), not just when shopName string changes */
+  useLayoutEffect(() => {
     document.title = shopName
       ? `${shopName} | Custom Handcrafted Cakes`
       : "Sweet Dreams Cakes | Custom Handcrafted Cakes";
-  }, [shopName]);
+  }, [settings]);
 
   useEffect(() => {
     if (!faviconUrl) return;

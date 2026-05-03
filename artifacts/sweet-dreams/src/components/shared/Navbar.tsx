@@ -93,7 +93,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen]   = useState(false);
 
   const NAV_LINKS = [
-    { label: t.nav.home,    to: "/" },
     { label: t.nav.gallery, to: "/gallery" },
   ];
 
