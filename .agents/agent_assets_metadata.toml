@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "xV69tDliZiy7ITYFFIGAf"
+uri = "file://sweet-dreams-src.tar.gz"
+type = "unspecified"
+title = "Sweet Dreams Cakes — Source Code"

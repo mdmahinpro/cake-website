@@ -5,6 +5,7 @@ import AnimatedSection from "../shared/AnimatedSection";
 import OrderButton from "../shared/OrderButton";
 import { useStore } from "../../store/useStore";
 import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
+import { useT } from "../../i18n/translations";
 
 function useVisibleCount() {
   const [count, setCount] = useState(1);
@@ -26,8 +27,8 @@ export default function FeaturedCarousel() {
   const { gallery } = state;
   const { siteTheme } = useTheme();
   const tokens = THEME_TOKENS[siteTheme];
+  const t = useT();
 
-  /* Only admin's favorite picks (featured: true) */
   const items = gallery.filter((g) => g.featured);
 
   const visibleCount = useVisibleCount();
@@ -50,13 +51,10 @@ export default function FeaturedCarousel() {
   }, [maxIndex]);
 
   useEffect(() => {
-    if (paused || !showNav) return;
-    timerRef.current = setInterval(goNext, 4000);
+    if (!showNav || paused) return;
+    timerRef.current = setInterval(goNext, 3500);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, goNext, showNav]);
-
-  /* Reset index if items change */
-  useEffect(() => { setIndex(0); }, [items.length, visibleCount]);
+  }, [showNav, paused, goNext]);
 
   if (items.length === 0) return null;
 
@@ -68,9 +66,9 @@ export default function FeaturedCarousel() {
     exit:   (dir: number) => ({ x: dir > 0 ? -120 : 120, opacity: 0 }),
   };
 
-  const navBg  = siteTheme === "navy" ? "#031525" : "#1e0904";
+  const navBg     = siteTheme === "navy" ? "#031525" : "#1e0904";
   const sectionBg = siteTheme === "navy" ? "rgba(3,21,37,0.7)" : "rgba(18,6,2,0.7)";
-  const cardBg = siteTheme === "navy" ? "#031525" : "#1e0904";
+  const cardBg    = siteTheme === "navy" ? "#031525" : "#1e0904";
 
   const navBtn =
     "absolute top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-caramel-400 flex items-center justify-center text-caramel-400 hover:bg-caramel-400 hover:text-choco-900 transition-all duration-200 shadow-lg";
@@ -79,16 +77,14 @@ export default function FeaturedCarousel() {
     <section className="py-20 overflow-hidden transition-colors duration-700" style={{ background: sectionBg }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center mb-12">
-          <p className="section-subtitle mb-2">Admin's Favourite Picks</p>
-          <h2 className="section-title">Featured Creations</h2>
+          <p className="section-subtitle mb-2 font-hind">{t.featured.subtitle}</p>
+          <h2 className="section-title font-hind">{t.featured.title}</h2>
           <div className="w-24 h-1 bg-gradient-to-r from-caramel-400 to-caramel-200 mx-auto mt-4 rounded-full" />
         </AnimatedSection>
 
-        <div
-          className="relative"
+        <div className="relative"
           onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
+          onMouseLeave={() => setPaused(false)}>
           {showNav && (
             <motion.button onClick={goPrev} className={`${navBtn} left-0 -translate-x-1/2`}
               style={{ background: navBg }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} aria-label="Previous">
@@ -107,20 +103,13 @@ export default function FeaturedCarousel() {
                 exit="exit"
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="grid gap-4 md:gap-6"
-                style={{ gridTemplateColumns: `repeat(${visibleCount}, minmax(0, 1fr))` }}
-              >
+                style={{ gridTemplateColumns: `repeat(${visibleCount}, minmax(0, 1fr))` }}>
                 {visible.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    className="rounded-3xl overflow-hidden"
+                  <motion.div key={item.id} className="rounded-3xl overflow-hidden"
                     style={{ background: cardBg, border: `1px solid rgba(${tokens.accentRgb},0.15)` }}
-                    whileHover={{
-                      y: -8,
-                      boxShadow: `0 24px 48px rgba(0,0,0,0.5), 0 0 30px rgba(${tokens.accentRgb},0.12)`,
-                    }}
+                    whileHover={{ y: -8, boxShadow: `0 24px 48px rgba(0,0,0,0.5), 0 0 30px rgba(${tokens.accentRgb},0.12)` }}
                     whileTap={{ scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                  >
+                    transition={{ type: "spring", stiffness: 280, damping: 22 }}>
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.caption}
                         className="w-full aspect-square object-cover" loading="lazy" />
@@ -131,8 +120,8 @@ export default function FeaturedCarousel() {
                     )}
                     <div className="p-4 flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm text-caramel-100 line-clamp-2 flex-1">{item.caption}</p>
-                        <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-choco-900"
+                        <p className="text-sm text-caramel-100 line-clamp-2 flex-1 font-hind">{item.caption}</p>
+                        <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-choco-900 font-hind"
                           style={{ background: tokens.accentHex }}>
                           {item.category}
                         </span>

@@ -7,6 +7,7 @@ import AnimatedCake, { type CakeTheme } from "./AnimatedCake";
 import { useStore } from "../../store/useStore";
 import { useTheme, THEME_TOKENS } from "../../context/ThemeContext";
 import { openOrderChannel } from "../../utils/order";
+import { useT } from "../../i18n/translations";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },
@@ -20,23 +21,21 @@ const fadeLeft = (delay = 0) => ({
   transition: { delay, duration: 0.65, ease: [0.22, 1, 0.36, 1] as const },
 });
 
-const FLAVORS: { id: CakeTheme; label: string; note: string; swatch: string }[] = [
-  { id: "vanilla",   label: "Vanilla",   note: "Golden Bean", swatch: "radial-gradient(circle at 35% 30%, #fce888, #c89840, #7a4010)" },
-  { id: "chocolate", label: "Chocolate", note: "Dark & Rich",  swatch: "radial-gradient(circle at 35% 30%, #b06030, #5a2808, #1e0804)" },
+const BADGE_POSITIONS = [
+  "top-2 -right-2 md:top-4 md:-right-10",
+  "-bottom-2 -left-2 md:-left-10",
+  "bottom-10 -right-4 md:bottom-20 md:-right-12",
 ];
 
-/* Floating badges — adjusted positions for both mobile and desktop */
-const BADGES = [
-  { label: "Custom Design",       pos: "top-2 -right-2 md:top-4 md:-right-10" },
-  { label: "Fresh Baked",         pos: "-bottom-2 -left-2 md:-left-10" },
-  { label: "Love In Every Slice", pos: "bottom-10 -right-4 md:bottom-20 md:-right-12" },
-];
+const SWATCH_VANILLA   = "radial-gradient(circle at 35% 30%, #fce888, #c89840, #7a4010)";
+const SWATCH_CHOCOLATE = "radial-gradient(circle at 35% 30%, #b06030, #5a2808, #1e0804)";
 
 export default function HeroSection() {
   const { state } = useStore();
   const { settings } = state;
   const { siteTheme } = useTheme();
   const tokens = THEME_TOKENS[siteTheme];
+  const t = useT();
 
   const [scrolled, setScrolled] = useState(false);
   const [cakeTheme, setCakeTheme] = useState<CakeTheme>("vanilla");
@@ -54,6 +53,28 @@ export default function HeroSection() {
 
   const OrderIcon = settings.orderChannel === "whatsapp" ? FaWhatsapp : FaFacebook;
 
+  const BADGES = [
+    { label: t.hero.badge1, pos: BADGE_POSITIONS[0] },
+    { label: t.hero.badge2, pos: BADGE_POSITIONS[1] },
+    { label: t.hero.badge3, pos: BADGE_POSITIONS[2] },
+  ];
+
+  const FLAVORS: { id: CakeTheme; label: string; note: string; swatch: string }[] = [
+    { id: "vanilla",   label: t.hero.vanilla,    note: t.hero.goldenBean,  swatch: SWATCH_VANILLA },
+    { id: "chocolate", label: t.hero.chocolateFl, note: t.hero.darkRich,   swatch: SWATCH_CHOCOLATE },
+  ];
+
+  const scrollIndicator = (
+    <motion.div
+      className="flex flex-col items-center gap-1 pointer-events-none"
+      animate={{ opacity: scrolled ? 0 : 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <span className="font-dancing text-sm text-caramel-400/60">{t.hero.scrollExplore}</span>
+      <FaChevronDown className="text-caramel-400/60 animate-bounce-slow" />
+    </motion.div>
+  );
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background layers */}
@@ -69,7 +90,7 @@ export default function HeroSection() {
       <SparkleField />
       <FloatingParticles />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10 md:pb-16">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-4 md:pb-16">
         {/*
           flex-col-reverse: on mobile → cake (second in DOM) appears FIRST (top),
           text (first in DOM) appears SECOND (bottom).
@@ -81,14 +102,14 @@ export default function HeroSection() {
           <div className="md:w-3/5 flex flex-col gap-4 items-center md:items-start text-center md:text-left w-full">
             <motion.div {...fadeLeft(0)}>
               <span className="inline-flex items-center px-4 py-2 rounded-full border border-caramel-400/40 bg-caramel-400/10 font-dancing text-caramel-300 text-lg">
-                Handcrafted With Love
+                {t.hero.tagline}
               </span>
             </motion.div>
 
             <motion.div {...fadeUp(0.12)}>
               <h1 className="font-playfair font-black leading-tight">
-                <span className="text-3xl sm:text-5xl md:text-7xl text-white block">Your Dream Cake</span>
-                <span className="text-3xl sm:text-5xl md:text-7xl text-gradient block">Starts Here</span>
+                <span className="text-3xl sm:text-5xl md:text-7xl text-white block">{t.hero.title1}</span>
+                <span className="text-3xl sm:text-5xl md:text-7xl text-gradient block">{t.hero.title2}</span>
               </h1>
             </motion.div>
 
@@ -104,17 +125,16 @@ export default function HeroSection() {
                 whileTap={{ scale: 0.95 }}
               >
                 <OrderIcon size={18} />
-                Order Your Cake
+                {t.hero.order}
               </motion.button>
               <motion.button
                 onClick={scrollToGallery}
                 className="btn-outline flex items-center justify-center min-h-[48px] w-full sm:w-auto"
                 whileTap={{ scale: 0.95 }}
               >
-                See Our Work
+                {t.hero.seeWork}
               </motion.button>
             </motion.div>
-
           </div>
 
           {/* ── Cake visual (top on mobile, right on desktop) ── */}
@@ -134,11 +154,11 @@ export default function HeroSection() {
               </motion.div>
 
               {BADGES.map((b, i) => (
-                <motion.div key={b.label}
+                <motion.div key={i}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 2.0 + i * 0.15, type: "spring" }}
-                  className={`absolute animate-float-slow px-2.5 py-1 rounded-full text-[9px] md:text-xs text-caramel-200 border border-caramel-400/40 whitespace-nowrap ${b.pos}`}
+                  className={`absolute animate-float-slow px-2.5 py-1 rounded-full text-[9px] md:text-xs text-caramel-200 border border-caramel-400/40 whitespace-nowrap font-hind ${b.pos}`}
                   style={{ background: `${tokens.bgDeep}e6`, animationDelay: `${i * 0.9}s` }}>
                   {b.label}
                 </motion.div>
@@ -153,7 +173,7 @@ export default function HeroSection() {
               className="flex flex-col items-center gap-2"
             >
               <p className="text-[10px] tracking-[0.2em] uppercase font-poppins text-caramel-400/55 select-none">
-                Choose a flavor
+                {t.hero.chooseFlavor}
               </p>
               <div className="flex gap-2">
                 {FLAVORS.map((fl) => {
@@ -164,7 +184,7 @@ export default function HeroSection() {
                       onClick={() => setCakeTheme(fl.id)}
                       whileTap={{ scale: 0.93 }}
                       whileHover={{ scale: 1.04 }}
-                      className="relative flex items-center gap-2 px-3 py-2 rounded-full font-poppins text-xs font-semibold transition-colors duration-300 select-none focus:outline-none"
+                      className="relative flex items-center gap-2 px-3 py-2 rounded-full font-hind text-xs font-semibold transition-colors duration-300 select-none focus:outline-none"
                       style={{
                         background: active ? `rgba(${tokens.accentRgb},0.13)` : "rgba(255,255,255,0.04)",
                         border: active ? `1px solid rgba(${tokens.accentRgb},0.55)` : "1px solid rgba(255,255,255,0.1)",
@@ -192,17 +212,17 @@ export default function HeroSection() {
 
           </div>
         </div>
+
+        {/* Scroll indicator — in document flow on mobile (won't overlap buttons) */}
+        <div className="flex md:hidden justify-center pt-6">
+          {scrollIndicator}
+        </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none"
-        animate={{ opacity: scrolled ? 0 : 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <span className="font-dancing text-sm text-caramel-400/60">Scroll to explore</span>
-        <FaChevronDown className="text-caramel-400/60 animate-bounce-slow" />
-      </motion.div>
+      {/* Scroll indicator — absolute on desktop */}
+      <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-1 pointer-events-none">
+        {scrollIndicator}
+      </div>
     </section>
   );
 }

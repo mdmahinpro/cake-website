@@ -6,11 +6,7 @@ import { useStore } from "../../store/useStore";
 import { useTheme } from "../../context/ThemeContext";
 import { useLang } from "../../context/LangContext";
 import { openOrderChannel } from "../../utils/order";
-
-const NAV_LINKS = [
-  { label: "Home",    to: "/" },
-  { label: "Gallery", to: "/gallery" },
-];
+import { useT } from "../../i18n/translations";
 
 function CakeLogo() {
   return (
@@ -31,6 +27,7 @@ function CakeLogo() {
 /* ── Two-dot theme toggle pill ── */
 function ThemeToggle() {
   const { siteTheme, toggleTheme } = useTheme();
+  const t = useT();
   const isNavy = siteTheme === "navy";
   const pillBg     = isNavy ? "rgba(0,190,255,0.08)"  : "rgba(240,217,168,0.1)";
   const pillBorder = isNavy ? "rgba(0,190,255,0.25)"  : "rgba(240,217,168,0.3)";
@@ -39,7 +36,7 @@ function ThemeToggle() {
     <motion.button
       onClick={toggleTheme}
       whileTap={{ scale: 0.88 }}
-      title={isNavy ? "Switch to Chocolate theme" : "Switch to Navy theme"}
+      title={isNavy ? `Switch to ${t.nav.chocolate} theme` : `Switch to ${t.nav.navy} theme`}
       aria-label="Toggle site theme"
       className="relative flex items-center gap-1.5 h-7 px-2.5 rounded-full transition-all duration-300 select-none focus:outline-none"
       style={{ background: pillBg, border: `1px solid ${pillBorder}` }}
@@ -91,8 +88,14 @@ export default function Navbar() {
   const { state } = useStore();
   const { settings } = state;
   const { siteTheme } = useTheme();
+  const t = useT();
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
+
+  const NAV_LINKS = [
+    { label: t.nav.home,    to: "/" },
+    { label: t.nav.gallery, to: "/gallery" },
+  ];
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 20); }
@@ -149,7 +152,7 @@ export default function Navbar() {
             <button onClick={handleOrder}
               className="hidden md:flex items-center gap-2 btn-primary px-4 py-2 text-sm">
               <OrderIcon size={16} />
-              Order Now
+              {t.nav.orderNow}
             </button>
 
             {/* Hamburger — mobile only */}
@@ -179,7 +182,7 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <span className="text-xs font-poppins text-caramel-400/60">
-                  {siteTheme === "navy" ? "Navy" : "Chocolate"}
+                  {siteTheme === "navy" ? t.nav.navy : t.nav.chocolate}
                 </span>
               </div>
               <button onClick={() => setMenuOpen(false)}
@@ -194,7 +197,7 @@ export default function Navbar() {
 
             {/* Nav links */}
             <div className="flex-1 flex flex-col items-center justify-center gap-10">
-              {[...NAV_LINKS, { label: "Order Now", to: null }].map((link, i) => (
+              {[...NAV_LINKS, { label: t.nav.orderNow, to: null }].map((link, i) => (
                 <motion.div key={link.label}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -206,7 +209,7 @@ export default function Navbar() {
                     </Link>
                   ) : (
                     <button onClick={() => { setMenuOpen(false); handleOrder(); }}
-                      className="btn-primary w-48 flex items-center justify-center gap-2 text-lg">
+                      className="btn-primary w-48 flex items-center justify-center gap-2 text-lg font-hind">
                       <OrderIcon size={20} />
                       {link.label}
                     </button>
