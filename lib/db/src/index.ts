@@ -21,4 +21,23 @@ export function getDb() {
   return _db;
 }
 
+/** Run once at server startup — creates the shops table if it doesn't exist yet. */
+export async function ensureSchema(): Promise<void> {
+  const url = process.env["DATABASE_URL"];
+  if (!url) return;
+  const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } });
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shops (
+        id          TEXT        PRIMARY KEY,
+        data        JSONB       NOT NULL,
+        admin_token TEXT        NOT NULL,
+        updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+  } finally {
+    await pool.end();
+  }
+}
+
 export * from "./schema";

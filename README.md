@@ -8,102 +8,71 @@ A full-featured cake shop website with an admin panel and live backend sync. Bui
 
 - **Public site** — Homepage, gallery, products/menu, and animated sections
 - **Admin panel** — Manage gallery, carousel, products, categories, and settings at `/control`
-- **Backend sync** — Every admin change auto-saves to a PostgreSQL database and syncs across all devices instantly
+- **Backend sync** — Every admin change auto-saves to Supabase (PostgreSQL) and syncs across all devices instantly
 - **Single deployment** — One Render Web Service serves both the website and the API
 
 ---
 
 ## Deploying to Render (one-time setup)
 
-### Step 1 — PostgreSQL database (already done if you followed setup)
+### Step 1 — Supabase database
 
-1. Render dashboard → **New** → **PostgreSQL** → free tier → create
-2. Copy the **Internal Database URL** (used only on Render, not locally)
-3. Copy the **External Database URL** (used to run migrations from your local machine)
+1. Go to [supabase.com](https://supabase.com) → create a new project
+2. Go to **Settings** → **Database**
+3. Scroll to **Connection string** → choose the **Session mode** tab (port 5432 via pooler)
+4. Copy the URI — it looks like:
+   `postgresql://postgres.xxxxxxxx:[PASSWORD]@aws-0-region.pooler.supabase.com:5432/postgres`
+5. Add it as a Render environment variable: `DATABASE_URL = <that URI>`
 
-Run the migration once from your local terminal (with the external URL):
-```
-DATABASE_URL=<external-url> pnpm --filter @workspace/db run push
-```
+The `shops` table is created automatically on first server startup — no migration needed.
 
-### Step 2 — Web Service
+### Step 2 — Web Service on Render
 
 1. Render dashboard → **New** → **Web Service**
-2. Connect your GitHub repo: `mdmahinpro/cake-website`
-3. Fill in these settings:
+2. Connect your GitHub repo (`mdmahinpro/cake-website`)
+3. Settings:
+   - **Branch**: `main`
+   - **Build Command**: `pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build`
+   - **Start Command**: `node artifacts/api-server/dist/index.mjs`
+   - **Environment**: Node
+4. Add environment variable:
+   - `DATABASE_URL` = your Supabase Session Pooler URI (from Step 1)
+5. Deploy
 
-| Setting | Value |
-|---|---|
-| **Root Directory** | *(leave blank)* |
-| **Runtime** | Node |
-| **Build Command** | `npm install -g pnpm@10 && pnpm install && pnpm --filter @workspace/api-server run build` |
-| **Start Command** | `node artifacts/api-server/dist/index.mjs` |
-| **Instance Type** | Free |
+### Step 3 — Connect the admin panel
 
-4. Add these **Environment Variables**:
-
-| Key | Value |
-|---|---|
-| `NODE_ENV` | `production` |
-| `DATABASE_URL` | *(Internal Database URL from Step 1)* |
-
-> **PORT** is set automatically by Render — do not add it.
-
-5. Click **Create Web Service** and wait for the first deploy (~3-5 min).
-
-Your site will be live at: `https://cake-website.onrender.com` (or your chosen name)
+1. Open your Render URL → go to `/control` → log in
+2. Go to the **Sync** tab
+3. Enter your **Shop ID** (e.g. `techely-cake-shop`) and **Sync Token** (default: `admin123`)
+4. Click **Connect & Test** — you should see "Connected! Data synced successfully."
+5. Every change you make now auto-saves and appears on all devices worldwide
 
 ---
 
-## Connecting the admin panel to the backend
+## How sync works
 
-Once the Render service is live:
-
-1. Go to your site → `/control` → log in → open the **Sync** tab
-2. Fill in:
-   - **API URL**: your Render URL (e.g. `https://cake-website.onrender.com`) — or leave blank if using the built-in `/api`
-   - **Shop ID**: a unique slug (e.g. `sweet-dreams`)
-   - **Sync Token**: any secret password you choose (keep it private)
-3. Click **Connect & Test** — your data saves to the database immediately
-
-After connecting, every change in the admin panel auto-saves to the database within 1.5 seconds. All devices see the latest content.
+- **Admin device**: When you make changes, they auto-save to Supabase after 1.5 seconds
+- **Visitor devices**: On page load, the site fetches the latest data from Supabase and displays it
+- **Hard refresh**: Safe — the app checks timestamps before overwriting; fresher local edits are never reverted
+- **New devices**: Automatically discover and load your shop data with no configuration needed
 
 ---
 
 ## Local development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start everything (frontend + API)
-pnpm --filter @workspace/sweet-dreams run dev   # Frontend at localhost:PORT
-pnpm --filter @workspace/api-server run dev     # API at localhost:8080
+# Start all services
+pnpm --filter @workspace/api-server run dev   # API on :8080
+pnpm --filter @workspace/sweet-dreams run dev  # Frontend via Vite
 ```
 
-Set a `DATABASE_URL` secret in Replit (external Render URL) to use the real database during development.
+Note: Local dev requires `DATABASE_URL` set as a Replit secret. Without it, the API returns 503 (expected — the site still works using local demo data).
 
 ---
 
-## Default admin password
+## Admin panel login
 
-```
-admin123
-```
+Default password: `admin` (set in `artifacts/sweet-dreams/src/pages/AdminPage.tsx`)
 
-Change it in the admin panel → Settings → Admin Password after first login.
-
----
-
-## Notes on Render free tier
-
-- The service **sleeps after 15 minutes** of no traffic
-- First visitor after a sleep period waits ~30 seconds for it to wake up
-- A loading indicator appears automatically during wake-up
-- Upgrade to a paid plan ($7/mo) for always-on if needed
-
----
-
-## For multiple client websites
-
-Deploy the API once on Render — it can serve unlimited shops. Each client website just needs a different **Shop ID** in the Sync tab. Set `VITE_SHOP_ID` as a build-time environment variable to lock it in permanently for a specific client.
+Change it before going public!
