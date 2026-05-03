@@ -126,7 +126,7 @@ export default function HeroSection() {
                 {t.hero.order}
               </motion.button>
               <motion.button
-                onClick={scrollToGallery}
+                onClick={() => navigate("/gallery")}
                 className="btn-outline flex items-center justify-center min-h-[48px] w-full sm:w-auto"
                 whileTap={{ scale: 0.95 }}
               >
