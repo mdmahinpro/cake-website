@@ -158,7 +158,16 @@ function loadFromStorage(): StoreState {
 
 function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
-    case "LOAD_STATE": return action.payload;
+    case "LOAD_STATE": return {
+      /* Merge with defaultState so any missing field has a safe fallback */
+      ...defaultState,
+      ...action.payload,
+      settings: { ...defaultSettings, ...(action.payload.settings ?? {}) },
+      gallery:    Array.isArray(action.payload.gallery)    ? action.payload.gallery    : defaultState.gallery,
+      carousel:   Array.isArray(action.payload.carousel)   ? action.payload.carousel   : defaultState.carousel,
+      categories: Array.isArray(action.payload.categories) ? action.payload.categories : defaultState.categories,
+      products:   Array.isArray(action.payload.products)   ? action.payload.products   : defaultState.products,
+    };
     case "SET_SETTINGS": return { ...state, settings: { ...state.settings, ...action.payload } };
     case "SET_GALLERY": return { ...state, gallery: action.payload };
     case "ADD_GALLERY_ITEM": return { ...state, gallery: [...state.gallery, action.payload] };
