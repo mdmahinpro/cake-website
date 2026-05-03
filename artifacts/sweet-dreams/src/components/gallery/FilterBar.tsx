@@ -15,7 +15,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
   const tokens = THEME_TOKENS[siteTheme];
   const t = useT();
 
-  const CATEGORIES = [
+  const ALL_CATEGORIES = [
     { slug: "all",         label: t.filterBar.all },
     { slug: "chocolate",   label: t.filterBar.chocolate },
     { slug: "vanilla",     label: t.filterBar.vanilla },
@@ -23,7 +23,12 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
     { slug: "birthday",    label: t.filterBar.birthday },
     { slug: "wedding",     label: t.filterBar.wedding },
     { slug: "custom",      label: t.filterBar.customize },
+    { slug: "others",      label: t.filterBar.others },
   ];
+
+  const CATEGORIES = ALL_CATEGORIES.filter(
+    (cat) => cat.slug === "all" || countForSlug(cat.slug) > 0
+  );
 
   function countForSlug(slug: string) {
     if (slug === "all") return gallery.length;

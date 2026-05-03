@@ -93,6 +93,7 @@ const T = {
       birthday:    "Birthday",
       wedding:     "Wedding",
       customize:   "Customize",
+      others:      "Others",
     },
     products: {
       home:       "Home",
@@ -197,6 +198,7 @@ const T = {
       birthday:    "জন্মদিন",
       wedding:     "বিবাহ",
       customize:   "কাস্টমাইজ",
+      others:      "অন্যান্য",
     },
     products: {
       home:       "হোম",
