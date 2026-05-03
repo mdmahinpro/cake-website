@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import {
   MdDashboard, MdPhoto, MdViewCarousel, MdCheckCircle,
-  MdSettings, MdLogout, MdOpenInNew, MdShoppingBag,
+  MdSettings, MdLogout, MdOpenInNew, MdShoppingBag, MdCloudUpload,
 } from "react-icons/md";
 import { useStore } from "../../store/useStore";
 
-export type AdminPage = "dashboard" | "gallery" | "carousel" | "delivered" | "products" | "settings";
+export type AdminPage = "dashboard" | "gallery" | "carousel" | "delivered" | "products" | "settings" | "publish";
 
 interface NavItem {
   id: AdminPage;
@@ -21,6 +21,7 @@ const NAV: NavItem[] = [
   { id: "carousel",  label: "Carousel Slides",  short: "Carousel",  icon: MdViewCarousel },
   { id: "delivered", label: "Delivered Orders", short: "Delivered", icon: MdCheckCircle },
   { id: "settings",  label: "Settings",         short: "Settings",  icon: MdSettings },
+  { id: "publish",   label: "Publish Site",     short: "Publish",   icon: MdCloudUpload },
 ];
 
 interface Props {
@@ -137,7 +138,7 @@ export default function AdminLayout({ currentPage, onNavigate, onLogout, childre
       {/* ── Mobile bottom navigation ── */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 safe-area-pb"
         style={{ background: "rgba(1,13,30,0.98)", borderTop: `1px solid ${BORDER}`, backdropFilter: "blur(16px)" }}>
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-7">
           {NAV.map(({ id, short, icon: Icon }) => {
             const active = currentPage === id;
             return (

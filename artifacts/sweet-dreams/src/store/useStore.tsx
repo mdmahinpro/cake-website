@@ -196,10 +196,34 @@ const StoreContext = createContext<StoreContextValue | null>(null);
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, defaultState, loadFromStorage);
 
+  // Persist to localStorage on every state change
   useEffect(() => {
     const { isAuthenticated: _, ...persistable } = state;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable)); } catch {}
   }, [state]);
+
+  // On startup: try to fetch /sweet-dreams-data.json from the server.
+  // When the owner uploads this file to Hostinger, ALL visitors automatically
+  // load the published content instead of the default demo data.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/sweet-dreams-data.json", { cache: "no-cache" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: null | (Omit<StoreState, "isAuthenticated"> & { publishedAt?: number })) => {
+        if (cancelled) return;
+        if (data && data.settings) {
+          dispatch({
+            type: "LOAD_STATE",
+            payload: { ...data, isAuthenticated: false },
+          });
+        }
+      })
+      .catch(() => {
+        // File doesn't exist yet — silently fall back to localStorage/demo data
+      });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <StoreContext.Provider value={{ state, dispatch }}>

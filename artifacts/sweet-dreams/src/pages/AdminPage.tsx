@@ -7,6 +7,7 @@ import GalleryManager from "../components/admin/GalleryManager";
 import CarouselManager from "../components/admin/CarouselManager";
 import SettingsPage from "../components/admin/SettingsPage";
 import ProductManager from "../components/admin/ProductManager";
+import PublishPanel from "../components/admin/PublishPanel";
 
 const PAGE_TITLES: Record<AdminPageId, string> = {
   dashboard: "Dashboard",
@@ -15,6 +16,7 @@ const PAGE_TITLES: Record<AdminPageId, string> = {
   carousel:  "Carousel Slides",
   delivered: "Delivered Orders",
   settings:  "Settings",
+  publish:   "Publish Site",
 };
 
 const pageVariants = {
@@ -41,6 +43,7 @@ export default function AdminPage() {
       case "carousel":  return <CarouselManager />;
       case "delivered": return <GalleryManager filterDelivered />;
       case "settings":  return <SettingsPage />;
+      case "publish":   return <PublishPanel />;
       default:          return <DashboardPage onNavigate={setCurrentPage} />;
     }
   }
