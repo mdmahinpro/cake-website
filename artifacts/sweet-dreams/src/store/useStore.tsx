@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useRef, useState } from "react";
 import { DEMO_GALLERY, DEMO_CAROUSEL, DEMO_PRODUCT_CATEGORIES, DEMO_PRODUCTS } from "../data/demoData";
+import { isBackendConfigured, fetchShopData, saveShopData } from "../lib/api";
 
 export interface CakeItem {
   id: string;
@@ -132,7 +133,6 @@ function loadFromStorage(): StoreState {
 
     if (!productsLoaded) {
       localStorage.setItem(PRODUCTS_DEMO_KEY, "true");
-      // Force-replace demo products with fresh images on version bump
       if (categories.length === 0) categories = DEMO_PRODUCT_CATEGORIES;
       products = DEMO_PRODUCTS;
     }
@@ -189,47 +189,131 @@ function reducer(state: StoreState, action: Action): StoreState {
   }
 }
 
+export type SyncStatus = "idle" | "syncing" | "ok" | "error" | "waking";
+
 interface StoreContextValue {
   state: StoreState;
   dispatch: React.Dispatch<Action>;
+  syncStatus: SyncStatus;
+  lastSyncedAt: number | null;
+  syncError: string | null;
+  manualSync: () => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, defaultState, loadFromStorage);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
-  // Persist to localStorage on every state change
+  /* ── refs to avoid stale closures ── */
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialLoad = useRef(true);
+  const isLoadingFromBackend = useRef(false);
+
+  /* ── Persist to localStorage on every state change ── */
   useEffect(() => {
     const { isAuthenticated: _, ...persistable } = state;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable)); } catch {}
   }, [state]);
 
-  // On startup: try to fetch /sweet-dreams-data.json from the server.
-  // When the owner uploads this file to Hostinger, ALL visitors automatically
-  // load the published content instead of the default demo data.
+  /* ── On startup: fetch from backend if configured ── */
   useEffect(() => {
+    if (!isBackendConfigured()) return;
+
     let cancelled = false;
-    fetch("/sweet-dreams-data.json", { cache: "no-cache" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: null | (Omit<StoreState, "isAuthenticated"> & { publishedAt?: number })) => {
+    isLoadingFromBackend.current = true;
+    setSyncStatus("waking");
+
+    async function tryFetch(retries = 1): Promise<void> {
+      try {
+        const data = await fetchShopData();
         if (cancelled) return;
-        if (data && data.settings) {
+        if (data && data["settings"]) {
+          isLoadingFromBackend.current = true;
           dispatch({
             type: "LOAD_STATE",
-            payload: { ...data, isAuthenticated: false },
+            payload: { ...(data as Omit<StoreState, "isAuthenticated">), isAuthenticated: false },
           });
+          setLastSyncedAt(Date.now());
+          setSyncStatus("ok");
+        } else {
+          setSyncStatus("idle");
         }
-      })
-      .catch(() => {
-        // File doesn't exist yet — silently fall back to localStorage/demo data
-      });
+      } catch {
+        if (cancelled) return;
+        if (retries > 0) {
+          /* Render free tier cold start — wait 8s and retry once */
+          setSyncStatus("waking");
+          await new Promise((r) => setTimeout(r, 8000));
+          if (!cancelled) return tryFetch(retries - 1);
+        } else {
+          setSyncStatus("error");
+          setSyncError("Could not reach backend. Using local data.");
+        }
+      } finally {
+        isLoadingFromBackend.current = false;
+      }
+    }
+
+    tryFetch();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ── Auto-save to backend after admin changes (debounced 1.5s) ── */
+  useEffect(() => {
+    /* Skip the very first render and backend-initiated loads */
+    if (isInitialLoad.current) { isInitialLoad.current = false; return; }
+    if (isLoadingFromBackend.current) return;
+    if (!state.isAuthenticated) return;
+    if (!isBackendConfigured()) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+
+    saveTimerRef.current = setTimeout(async () => {
+      setSyncStatus("syncing");
+      const { isAuthenticated: _, ...payload } = stateRef.current;
+      const result = await saveShopData(payload as Record<string, unknown>);
+      if (result.ok) {
+        setSyncStatus("ok");
+        setLastSyncedAt(Date.now());
+        setSyncError(null);
+      } else {
+        setSyncStatus("error");
+        setSyncError(result.error ?? "Sync failed");
+      }
+    }, 1500);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  /* ── Manual sync (triggered from SyncPanel) ── */
+  async function manualSync() {
+    if (!isBackendConfigured()) return;
+    setSyncStatus("syncing");
+    const { isAuthenticated: _, ...payload } = stateRef.current;
+    const result = await saveShopData(payload as Record<string, unknown>);
+    if (result.ok) {
+      setSyncStatus("ok");
+      setLastSyncedAt(Date.now());
+      setSyncError(null);
+    } else {
+      setSyncStatus("error");
+      setSyncError(result.error ?? "Sync failed");
+    }
+  }
+
   return (
-    <StoreContext.Provider value={{ state, dispatch }}>
+    <StoreContext.Provider value={{ state, dispatch, syncStatus, lastSyncedAt, syncError, manualSync }}>
       {children}
     </StoreContext.Provider>
   );

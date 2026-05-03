@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import {
   MdDashboard, MdPhoto, MdViewCarousel, MdCheckCircle,
-  MdSettings, MdLogout, MdOpenInNew, MdShoppingBag, MdCloudUpload,
+  MdSettings, MdLogout, MdOpenInNew, MdShoppingBag, MdCloudDone, MdCloudOff, MdSync,
 } from "react-icons/md";
-import { useStore } from "../../store/useStore";
+import { useStore, type SyncStatus } from "../../store/useStore";
 
-export type AdminPage = "dashboard" | "gallery" | "carousel" | "delivered" | "products" | "settings" | "publish";
+export type AdminPage = "dashboard" | "gallery" | "carousel" | "delivered" | "products" | "settings" | "sync";
 
 interface NavItem {
   id: AdminPage;
@@ -21,7 +21,7 @@ const NAV: NavItem[] = [
   { id: "carousel",  label: "Carousel Slides",  short: "Carousel",  icon: MdViewCarousel },
   { id: "delivered", label: "Delivered Orders", short: "Delivered", icon: MdCheckCircle },
   { id: "settings",  label: "Settings",         short: "Settings",  icon: MdSettings },
-  { id: "publish",   label: "Publish Site",     short: "Publish",   icon: MdCloudUpload },
+  { id: "sync",      label: "Backend Sync",     short: "Sync",      icon: MdCloudDone },
 ];
 
 interface Props {
@@ -38,8 +38,16 @@ const ACTIVE_BG   = "rgba(0,190,255,0.10)";
 const ACTIVE_TEXT = "#00beff";
 const IDLE_TEXT   = "#2a6eb5";
 
+function SyncIndicator({ status }: { status: SyncStatus }) {
+  if (status === "ok")      return <MdCloudDone  size={14} style={{ color: "#22c55e" }} />;
+  if (status === "error")   return <MdCloudOff   size={14} style={{ color: "#ef4444" }} />;
+  if (status === "syncing" || status === "waking")
+    return <MdSync size={14} className="animate-spin" style={{ color: "#f59e0b" }} />;
+  return null;
+}
+
 function DesktopSidebar({ current, onNavigate, onLogout }: { current: AdminPage; onNavigate: (p: AdminPage) => void; onLogout: () => void }) {
-  const { state } = useStore();
+  const { state, syncStatus } = useStore();
   return (
     <div className="flex flex-col h-full" style={{ background: SIDEBAR_BG, borderRight: `1px solid ${BORDER}` }}>
       {/* Brand */}
@@ -67,7 +75,8 @@ function DesktopSidebar({ current, onNavigate, onLogout }: { current: AdminPage;
                 borderLeft: active ? `2px solid ${ACTIVE_TEXT}` : "2px solid transparent",
               }}>
               <Icon size={19} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {id === "sync" && <SyncIndicator status={syncStatus} />}
             </button>
           );
         })}
@@ -92,6 +101,8 @@ function DesktopSidebar({ current, onNavigate, onLogout }: { current: AdminPage;
 }
 
 export default function AdminLayout({ currentPage, onNavigate, onLogout, children, pageTitle }: Props) {
+  const { syncStatus } = useStore();
+
   return (
     <div className="min-h-dvh flex" style={{ background: "#010d1e" }}>
       {/* Desktop sidebar */}
@@ -113,6 +124,19 @@ export default function AdminLayout({ currentPage, onNavigate, onLogout, childre
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Sync status chip */}
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium"
+              style={{ borderColor: BORDER, color: IDLE_TEXT }}>
+              <SyncIndicator status={syncStatus} />
+              <span>
+                {syncStatus === "ok"      && "Saved"}
+                {syncStatus === "syncing" && "Saving…"}
+                {syncStatus === "waking"  && "Waking…"}
+                {syncStatus === "error"   && "Sync error"}
+                {syncStatus === "idle"    && "Local only"}
+              </span>
+            </div>
+
             <Link to="/" target="_blank"
               className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors"
               style={{ color: ACTIVE_TEXT, borderColor: BORDER }}
@@ -143,10 +167,16 @@ export default function AdminLayout({ currentPage, onNavigate, onLogout, childre
             const active = currentPage === id;
             return (
               <button key={id} onClick={() => onNavigate(id)}
-                className="flex flex-col items-center justify-center gap-0.5 py-2.5 transition-colors active:scale-95"
+                className="flex flex-col items-center justify-center gap-0.5 py-2.5 transition-colors active:scale-95 relative"
                 style={{ color: active ? ACTIVE_TEXT : IDLE_TEXT, background: active ? ACTIVE_BG : "transparent" }}>
                 <Icon size={22} />
                 <span className="text-[9px] font-semibold leading-none">{short}</span>
+                {id === "sync" && (syncStatus === "syncing" || syncStatus === "waking") && (
+                  <span className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                )}
+                {id === "sync" && syncStatus === "error" && (
+                  <span className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
+                )}
               </button>
             );
           })}

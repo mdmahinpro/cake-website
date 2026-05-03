@@ -7,7 +7,8 @@ import GalleryManager from "../components/admin/GalleryManager";
 import CarouselManager from "../components/admin/CarouselManager";
 import SettingsPage from "../components/admin/SettingsPage";
 import ProductManager from "../components/admin/ProductManager";
-import PublishPanel from "../components/admin/PublishPanel";
+import SyncPanel from "../components/admin/SyncPanel";
+import { useStore } from "../store/useStore";
 
 const PAGE_TITLES: Record<AdminPageId, string> = {
   dashboard: "Dashboard",
@@ -16,7 +17,7 @@ const PAGE_TITLES: Record<AdminPageId, string> = {
   carousel:  "Carousel Slides",
   delivered: "Delivered Orders",
   settings:  "Settings",
-  publish:   "Publish Site",
+  sync:      "Backend Sync",
 };
 
 const pageVariants = {
@@ -26,14 +27,24 @@ const pageVariants = {
 };
 
 export default function AdminPage() {
+  const { dispatch } = useStore();
   const [authed, setAuthed] = useState(
     () => sessionStorage.getItem("cakeauth") === "true"
   );
   const [currentPage, setCurrentPage] = useState<AdminPageId>("dashboard");
 
-  function handleLogout() { sessionStorage.removeItem("cakeauth"); setAuthed(false); }
+  function handleLogin() {
+    setAuthed(true);
+    dispatch({ type: "SET_AUTHENTICATED", payload: true });
+  }
 
-  if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />;
+  function handleLogout() {
+    sessionStorage.removeItem("cakeauth");
+    setAuthed(false);
+    dispatch({ type: "SET_AUTHENTICATED", payload: false });
+  }
+
+  if (!authed) return <AdminLogin onSuccess={handleLogin} />;
 
   function renderPage() {
     switch (currentPage) {
@@ -43,7 +54,7 @@ export default function AdminPage() {
       case "carousel":  return <CarouselManager />;
       case "delivered": return <GalleryManager filterDelivered />;
       case "settings":  return <SettingsPage />;
-      case "publish":   return <PublishPanel />;
+      case "sync":      return <SyncPanel />;
       default:          return <DashboardPage onNavigate={setCurrentPage} />;
     }
   }

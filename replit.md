@@ -30,7 +30,7 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 
 ## Sweet Dreams Cakes (`artifacts/sweet-dreams`)
 
-A frontend-only static React + Vite cake shop website. No backend required — all data lives in `localStorage`.
+A React + Vite cake shop website. Data lives in `localStorage` by default; an optional backend sync layer pushes/pulls to a PostgreSQL database on Render so changes appear on every device instantly.
 
 ### Tech Stack
 - React 19 + Vite 7 + TypeScript
@@ -55,7 +55,8 @@ A frontend-only static React + Vite cake shop website. No backend required — a
 - `src/index.css` — Tailwind v4 `@theme` block with caramel/choco/rose palette + custom animations
 - `src/pages/AdminPage.tsx` — Admin router (internal `currentPage` state, no nested React Router routes)
 - `src/pages/ProductsPage.tsx` — Public products/menu page with category filter tabs
-- `src/components/admin/` — AdminLogin, AdminLayout, DashboardPage, GalleryManager, CarouselManager, SettingsPage, ProductManager
+- `src/lib/api.ts` — `getShopId`, `getSyncToken`, `getApiBase`, `fetchShopData`, `saveShopData` helpers
+- `src/components/admin/` — AdminLogin, AdminLayout, DashboardPage, GalleryManager, CarouselManager, SettingsPage, ProductManager, SyncPanel
 - `src/components/home/` — HeroSection, CategorySection, FeaturedCarousel, DeliveredSection, TestimonialsSection, CTASection, etc.
 - `src/components/gallery/` — GalleryGrid, GalleryCard, FilterBar, SearchBar, Lightbox
 - `src/components/shared/` — Navbar, Footer, SparkleField, FloatingParticles, AnimatedSection, OrderButton, FloatingOrderButton
