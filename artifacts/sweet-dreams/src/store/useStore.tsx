@@ -108,6 +108,7 @@ const defaultState: StoreState = {
 const STORAGE_KEY = "sweet_dreams_store";
 const DEMO_KEY = "cake-demo-loaded";
 const PRODUCTS_DEMO_KEY = "cake-products-loaded-v4";
+const LOCAL_MODIFIED_KEY = "sd_last_modified";
 
 function loadFromStorage(): StoreState {
   try {
@@ -159,7 +160,6 @@ function loadFromStorage(): StoreState {
 function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
     case "LOAD_STATE": return {
-      /* Merge with defaultState so any missing field has a safe fallback */
       ...defaultState,
       ...action.payload,
       settings: { ...defaultSettings, ...(action.payload.settings ?? {}) },
@@ -217,7 +217,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
 
-  /* ── refs to avoid stale closures ── */
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -231,24 +230,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable)); } catch {}
   }, [state]);
 
-  /* ── On startup: fetch from backend ── */
+  /* ── On startup: fetch live data from backend ── */
   useEffect(() => {
     let cancelled = false;
-    const configured = isBackendConfigured(); /* true when shopId already known */
+    const configured = isBackendConfigured();
 
     isLoadingFromBackend.current = true;
     if (configured) setSyncStatus("waking");
 
     async function tryFetch(retries = configured ? 1 : 0): Promise<void> {
       try {
-        const data = await fetchShopData();
+        const result = await fetchShopData();
         if (cancelled) return;
-        if (data && data["settings"]) {
-          isLoadingFromBackend.current = true;
-          dispatch({
-            type: "LOAD_STATE",
-            payload: { ...(data as Omit<StoreState, "isAuthenticated">), isAuthenticated: false },
-          });
+
+        if (result && result.data["settings"]) {
+          /*
+           * Only overwrite local state if the backend version is newer than
+           * the last time the admin made a local change. This prevents a hard
+           * refresh from reverting unsaved edits back to stale backend data.
+           */
+          const backendTs = result.updatedAt ? new Date(result.updatedAt).getTime() : 0;
+          const localModifiedRaw = localStorage.getItem(LOCAL_MODIFIED_KEY);
+          const localTs = localModifiedRaw ? new Date(localModifiedRaw).getTime() : 0;
+
+          if (backendTs >= localTs) {
+            isLoadingFromBackend.current = true;
+            dispatch({
+              type: "LOAD_STATE",
+              payload: {
+                ...(result.data as Omit<StoreState, "isAuthenticated">),
+                isAuthenticated: false,
+              },
+            });
+          }
+
           setLastSyncedAt(Date.now());
           setSyncStatus("ok");
         } else if (configured) {
@@ -257,12 +272,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       } catch {
         if (cancelled) return;
         if (retries > 0) {
-          /* Render free tier cold start — wait 8s and retry once */
           setSyncStatus("waking");
           await new Promise((r) => setTimeout(r, 8000));
           if (!cancelled) return tryFetch(retries - 1);
         } else if (configured) {
-          /* Only show error state to explicitly-configured shops (admin device) */
           setSyncStatus("error");
           setSyncError("Could not reach backend. Using local data.");
         }
@@ -278,11 +291,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   /* ── Auto-save to backend after admin changes (debounced 1.5s) ── */
   useEffect(() => {
-    /* Skip the very first render and backend-initiated loads */
     if (isInitialLoad.current) { isInitialLoad.current = false; return; }
     if (isLoadingFromBackend.current) return;
     if (!state.isAuthenticated) return;
     if (!isBackendConfigured()) return;
+
+    /* Record the local modification time so startup fetch doesn't revert it */
+    localStorage.setItem(LOCAL_MODIFIED_KEY, new Date().toISOString());
 
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
 
@@ -294,6 +309,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setSyncStatus("ok");
         setLastSyncedAt(Date.now());
         setSyncError(null);
+        /* Backend is now up-to-date — reset the local-modified marker */
+        localStorage.removeItem(LOCAL_MODIFIED_KEY);
       } else {
         setSyncStatus("error");
         setSyncError(result.error ?? "Sync failed");
@@ -306,7 +323,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
-  /* ── Manual sync (triggered from SyncPanel) ── */
+  /* ── Manual sync ── */
   async function manualSync() {
     if (!isBackendConfigured()) return;
     setSyncStatus("syncing");
@@ -316,6 +333,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setSyncStatus("ok");
       setLastSyncedAt(Date.now());
       setSyncError(null);
+      localStorage.removeItem(LOCAL_MODIFIED_KEY);
     } else {
       setSyncStatus("error");
       setSyncError(result.error ?? "Sync failed");
